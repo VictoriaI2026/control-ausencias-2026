@@ -15,7 +15,6 @@ header h1{font-size:15px;font-weight:500;color:#fff;display:flex;align-items:cen
 .header-right{display:flex;align-items:center;gap:10px}
 .sync-info{font-size:11px;color:rgba(255,255,255,.5)}
 .btn-sync{font-size:11px;padding:5px 13px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:7px;color:#fff;cursor:pointer}
-.btn-sync:hover{background:rgba(255,255,255,.22)}
 main{padding:1.25rem;flex:1}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.25rem}
 @media(max-width:700px){.metrics{grid-template-columns:repeat(2,1fr)}}
@@ -58,7 +57,7 @@ tr:hover td{background:#f8fafc}
 .input-row input[type=text]{font-size:11px;padding:3px 7px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#1e293b;flex:1;min-width:0;height:27px}
 .status-select{font-size:11px;padding:2px 5px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#1e293b;height:27px;width:100%;cursor:pointer}
 .save-btn{font-size:10px;padding:0 9px;cursor:pointer;background:var(--navy);border:none;border-radius:6px;color:#fff;white-space:nowrap;flex-shrink:0;height:27px;font-weight:500}
-.save-btn:hover{background:var(--navy2)}.save-btn:disabled{opacity:.5;cursor:default}
+.save-btn:disabled{opacity:.5;cursor:default}
 .flash{font-size:10px;height:14px;line-height:14px}
 .flash.ok{color:var(--teal)}.flash.err{color:var(--red)}
 .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem}
@@ -68,16 +67,8 @@ tr:hover td{background:#f8fafc}
 .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .bar-label{font-size:11px;color:#64748b;width:90px;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bar-track{flex:1;height:14px;background:#f1f5f9;border-radius:6px;overflow:hidden}
-.bar-fill{height:100%;border-radius:6px;transition:width .5s ease}
+.bar-fill{height:100%;border-radius:6px}
 .bar-count{font-size:11px;color:#94a3b8;width:30px;flex-shrink:0;text-align:right}
-.strategy-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:600px){.strategy-grid{grid-template-columns:1fr}}
-.strat-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:1rem}
-.strat-card:nth-child(1){border-top:3px solid var(--navy2)}.strat-card:nth-child(2){border-top:3px solid var(--amber)}.strat-card:nth-child(3){border-top:3px solid var(--teal)}.strat-card:nth-child(4){border-top:3px solid var(--purple)}.strat-card:nth-child(5){border-top:3px solid var(--coral)}.strat-card:nth-child(6){border-top:3px solid var(--blue)}
-.strat-card h4{font-size:13px;font-weight:500;margin-bottom:5px}
-.strat-card p{font-size:12px;color:#64748b;line-height:1.6}
-.strat-tag{font-size:10px;padding:2px 8px;border-radius:8px;display:inline-block;margin-bottom:6px}
-.tag-b{background:#e6f1fb;color:#185fa5}.tag-a{background:#faeeda;color:#854f0b}.tag-g{background:#e1f5ee;color:#0f6e56}.tag-p{background:#eeedfe;color:#534ab7}.tag-c{background:#faece7;color:#993c1d}
 .loading-overlay{display:none;position:fixed;inset:0;background:rgba(13,27,62,.55);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:12px}
 .loading-overlay.show{display:flex}
 .spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
@@ -86,7 +77,7 @@ tr:hover td{background:#f8fafc}
 </style>
 </head>
 <body>
-<div class="loading-overlay" id="loader"><div class="spinner"></div><p id="loader-msg">Conectando con Smartsheet...</p></div>
+<div class="loading-overlay" id="loader"><div class="spinner"></div><p id="loader-msg">Conectando...</p></div>
 <div id="app">
   <header>
     <h1><span class="dot"></span> Control de Ausencias 2026</h1>
@@ -107,12 +98,11 @@ tr:hover td{background:#f8fafc}
       <button class="tab-btn active" onclick="showTab('ausencias',this)">Ausencias</button>
       <button class="tab-btn" onclick="showTab('empleados',this)">Por empleado</button>
       <button class="tab-btn" onclick="showTab('resumen',this)">Resumen visual</button>
-      <button class="tab-btn" onclick="showTab('estrategias',this)">Estrategias</button>
     </div>
     <div id="tab-ausencias" class="tab-panel active">
       <div class="section-card">
         <div class="filters">
-          <input type="text" id="srch-aus" placeholder="Buscar empleado, supervisor..." oninput="filterAus()">
+          <input type="text" id="srch-aus" placeholder="Buscar empleado..." oninput="filterAus()">
           <select id="fil-tipo" onchange="filterAus()"><option value="">Tipo: Todos</option><option>Enfermedad</option><option>No show</option><option>Vacaciones</option><option>Personal</option></select>
           <select id="fil-dep" onchange="filterAus()"><option value="">Depto: Todos</option></select>
           <select id="fil-mes" onchange="filterAus()"><option value="">Mes: Todos</option></select>
@@ -121,37 +111,37 @@ tr:hover td{background:#f8fafc}
         </div>
         <div class="tbl-wrap">
           <table>
-            <colgroup><col style="width:28px"><col style="width:140px"><col style="width:82px"><col style="width:82px"><col style="width:72px"><col style="width:70px"><col style="width:125px"><col style="width:120px"><col style="width:175px"></colgroup>
-            <thead><tr><th>#</th><th>Empleado</th><th>Supervisor</th><th>Depto</th><th>Tipo</th><th>Fecha</th><th>Status HR <span class="ss-pill">Live</span></th><th>Comentarios <span class="ss-pill">Live</span></th><th>Justificación</th></tr></thead>
+            <colgroup><col style="width:28px"><col style="width:145px"><col style="width:85px"><col style="width:85px"><col style="width:72px"><col style="width:70px"><col style="width:125px"><col style="width:120px"><col style="width:170px"></colgroup>
+            <thead><tr><th>#</th><th>Empleado</th><th>Supervisor</th><th>Depto</th><th>Tipo</th><th>Fecha</th><th>Status HR <span class="ss-pill">Live</span></th><th>Comentarios <span class="ss-pill">Live</span></th><th>Justificacion</th></tr></thead>
             <tbody id="aus-tbody"><tr><td colspan="9" style="text-align:center;padding:2rem;color:#94a3b8">Cargando...</td></tr></tbody>
           </table>
         </div>
         <div class="pagination">
-          <button id="aus-prev" onclick="changePage('aus',-1)">← Anterior</button>
+          <button id="aus-prev" onclick="changePage('aus',-1)">Anterior</button>
           <span id="aus-pinfo"></span>
-          <button id="aus-next" onclick="changePage('aus',1)">Siguiente →</button>
+          <button id="aus-next" onclick="changePage('aus',1)">Siguiente</button>
         </div>
       </div>
     </div>
     <div id="tab-empleados" class="tab-panel">
       <div class="section-card">
         <div class="filters">
-          <input type="text" id="srch-emp" placeholder="Buscar nombre, ID, supervisor..." oninput="filterEmp()">
+          <input type="text" id="srch-emp" placeholder="Buscar nombre, ID..." oninput="filterEmp()">
           <select id="fil-sup" onchange="filterEmp()"><option value="">Supervisor: Todos</option></select>
           <select id="fil-show" onchange="filterEmp()"><option value="">Todos</option><option value="noreg">Sin registro</option><option value="noshow">Tiene No shows</option><option value="multi">3+ ausencias</option></select>
           <span class="count-pill" id="emp-count"></span>
         </div>
         <div class="tbl-wrap">
           <table>
-            <colgroup><col style="width:60px"><col style="width:170px"><col style="width:62px"><col style="width:110px"><col style="width:100px"><col style="width:62px"><col style="width:100px"><col style="width:175px"></colgroup>
-            <thead><tr><th>ID</th><th>Nombre</th><th>Ausencias</th><th>Supervisor</th><th>Posición</th><th>No shows</th><th>Estado</th><th>Comentarios <span class="ss-pill">Live</span></th></tr></thead>
+            <colgroup><col style="width:60px"><col style="width:175px"><col style="width:62px"><col style="width:115px"><col style="width:100px"><col style="width:62px"><col style="width:100px"><col style="width:175px"></colgroup>
+            <thead><tr><th>ID</th><th>Nombre</th><th>Ausencias</th><th>Supervisor</th><th>Posicion</th><th>No shows</th><th>Estado</th><th>Comentarios <span class="ss-pill">Live</span></th></tr></thead>
             <tbody id="emp-tbody"><tr><td colspan="8" style="text-align:center;padding:2rem;color:#94a3b8">Cargando...</td></tr></tbody>
           </table>
         </div>
         <div class="pagination">
-          <button id="emp-prev" onclick="changePage('emp',-1)">← Anterior</button>
+          <button id="emp-prev" onclick="changePage('emp',-1)">Anterior</button>
           <span id="emp-pinfo"></span>
-          <button id="emp-next" onclick="changePage('emp',1)">Siguiente →</button>
+          <button id="emp-next" onclick="changePage('emp',1)">Siguiente</button>
         </div>
       </div>
     </div>
@@ -165,21 +155,8 @@ tr:hover td{background:#f8fafc}
         <div class="chart-card"><h3>Top 10 empleados</h3><div id="c-top"></div></div>
       </div>
     </div>
-    <div id="tab-estrategias" class="tab-panel">
-      <div class="section-card">
-        <p style="font-size:13px;color:#64748b;margin-bottom:1rem;line-height:1.6">Estrategias para garantizar que <strong style="color:#1e293b">todos los empleados sean registrados</strong>.</p>
-        <div class="strategy-grid">
-          <div class="strat-card"><span class="strat-tag tag-b">Proceso</span><h4>Comparación diaria vs roster</h4><p>Cruce automático entre roster activo y Smartsheet.</p></div>
-          <div class="strat-card"><span class="strat-tag tag-a">Seguimiento</span><h4>Recordatorio automático</h4><p>Automatización en Smartsheet a las 10am para supervisores sin envío del día.</p></div>
-          <div class="strat-card"><span class="strat-tag tag-g">Control</span><h4>Formulario de confirmación</h4><p>Segundo formulario diario. Sin envío = ausencia pendiente.</p></div>
-          <div class="strat-card"><span class="strat-tag tag-p">Incentivo</span><h4>Bono ligado al reporte</h4><p>El bono del supervisor se vincula a su tasa de reporte.</p></div>
-          <div class="strat-card"><span class="strat-tag tag-c">Visibilidad</span><h4>Tablero semanal</h4><p>Identifica empleados sin ausencia registrada para validación semanal.</p></div>
-          <div class="strat-card"><span class="strat-tag tag-b">Bono</span><h4>Cálculo de bono</h4><p>Solo empleados con al menos 1 registro califican para bono.</p></div>
-        </div>
-      </div>
-    </div>
   </main>
 </div>
-<script src="/app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
