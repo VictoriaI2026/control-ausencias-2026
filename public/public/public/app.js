@@ -1,4 +1,4 @@
-let allAus=[],allRoster=[],filteredAus=[],filteredEmp=[];
+let allAus=[],filteredAus=[],filteredEmp=[];
 let ausPage=0,empPage=0;
 const PAGE=40;
 const HR_OPTIONS=['Validado','Pendiente','Aprobado','Rechazado','En revisión'];
@@ -26,63 +26,37 @@ const ROSTER=[
   {id:"100967",nombre:"Cortes Serrano, Enrique",posicion:"Perito",supervisor:""}
 ];
 
-function getToken(){return localStorage.getItem('ss_token')||'';}
-function conectar(){
-  const token=document.getElementById('token-input').value.trim();
-  if(!token){showErr('Ingresa tu token.');return;}
-  localStorage.setItem('ss_token',token);
-  iniciarApp();
-}
-function logout(){localStorage.removeItem('ss_token');location.reload();}
-function showErr(msg){const el=document.getElementById('err-msg');el.textContent=msg;el.style.display='block';}
-function showLoader(msg){document.getElementById('loader-msg').textContent=msg||'Cargando...';document.getElementById('loader').classList.add('show');}
+function showLoader(m){document.getElementById('loader-msg').textContent=m||'Cargando...';document.getElementById('loader').classList.add('show');}
 function hideLoader(){document.getElementById('loader').classList.remove('show');}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/'/g,'&#39;');}
+function trunc(s,n){return s&&s.length>n?s.slice(0,n)+'…':(s||'—');}
+function tipoBadge(t){const k=Object.keys(TIPOS).find(k=>t&&t.toLowerCase().includes(k.toLowerCase()));return`<span class="badge ${k?TIPOS[k]:'b-otro'}">${t||'—'}</span>`;}
 
 async function fetchAusencias(){
-  const r=await fetch('/api/ausencias',{headers:{'x-ss-token':getToken()}});
+  const r=await fetch('/api/ausencias');
   if(!r.ok)throw new Error(`Error ${r.status}`);
   const data=await r.json();
   return data.rows||[];
 }
 
 async function patchCell(rowId,field,value,btnEl,flashEl){
-  if(!rowId){flash(flashEl,'err','Sin ID de fila');return;}
+  if(!rowId){flash(flashEl,'err','Sin ID');return;}
   if(btnEl){btnEl.disabled=true;btnEl.textContent='...';}
-  flash(flashEl,'','');
   try{
-    const r=await fetch(`/api/ausencias/${rowId}`,{
-      method:'PATCH',
-      headers:{'Content-Type':'application/json','x-ss-token':getToken()},
-      body:JSON.stringify({field,value})
-    });
+    const r=await fetch(`/api/ausencias/${rowId}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({field,value})});
     const data=await r.json();
     if(r.ok&&data.ok){
       flash(flashEl,'ok',field==='statusHR'?'Status actualizado':'Guardado');
       if(btnEl){btnEl.textContent='Guardado';setTimeout(()=>{if(btnEl){btnEl.textContent='Guardar';btnEl.disabled=false;}},2500);}
-    }else{
-      flash(flashEl,'err','Error al guardar');
-      if(btnEl){btnEl.textContent='Guardar';btnEl.disabled=false;}
-    }
-  }catch(e){
-    flash(flashEl,'err','Error de conexión');
-    if(btnEl){btnEl.textContent='Guardar';btnEl.disabled=false;}
-  }
+    }else{flash(flashEl,'err','Error al guardar');if(btnEl){btnEl.textContent='Guardar';btnEl.disabled=false;}}
+  }catch(e){flash(flashEl,'err','Error');if(btnEl){btnEl.textContent='Guardar';btnEl.disabled=false;}}
 }
 
-function flash(el,cls,msg){
-  if(!el)return;
-  el.className='flash'+(cls?' '+cls:'');
-  el.textContent=msg;
-  if(cls==='ok')setTimeout(()=>{el.textContent='';},3000);
-}
-
-function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/'/g,'&#39;');}
-function trunc(s,n){return s&&s.length>n?s.slice(0,n)+'…':(s||'—');}
-function tipoBadge(t){const k=Object.keys(TIPOS).find(k=>t&&t.toLowerCase().includes(k.toLowerCase()));return `<span class="badge ${k?TIPOS[k]:'b-otro'}">${t||'—'}</span>`;}
+function flash(el,cls,msg){if(!el)return;el.className='flash'+(cls?' '+cls:'');el.textContent=msg;if(cls==='ok')setTimeout(()=>{el.textContent='';},3000);}
 
 function statusHRSelect(rowId,current,uid){
   const opts=HR_OPTIONS.map(o=>`<option value="${o}"${o===current?' selected':''}>${o}</option>`).join('');
-  return `<div class="editable-cell"><div class="input-row"><select class="status-select" onchange="handleStatusChange('${rowId}','${uid}',this)"><option value="">— seleccionar —</option>${opts}</select></div><div class="flash" id="fls-${uid}"></div></div>`;
+  return`<div class="editable-cell"><div class="input-row"><select class="status-select" onchange="handleStatusChange('${rowId}','${uid}',this)"><option value="">— seleccionar —</option>${opts}</select></div><div class="flash" id="fls-${uid}"></div></div>`;
 }
 function handleStatusChange(rowId,uid,sel){
   const val=sel.value;if(!val)return;
@@ -90,9 +64,8 @@ function handleStatusChange(rowId,uid,sel){
   const idx=allAus.findIndex(r=>String(r.rowId)===String(rowId));
   if(idx>=0)allAus[idx].statusHR=val;
 }
-
 function commentCell(rowId,existing,uid){
-  return `<div class="editable-cell">${existing?`<div class="comment-existing">${trunc(existing,85)}</div>`:''}<div class="input-row"><input type="text" id="ci-${uid}" placeholder="Añadir comentario..." value="${esc(existing)}"><button class="save-btn" onclick="handleComment('${rowId}','${uid}',this)">Guardar</button></div><div class="flash" id="flc-${uid}"></div></div>`;
+  return`<div class="editable-cell">${existing?`<div class="comment-existing">${trunc(existing,85)}</div>`:''}<div class="input-row"><input type="text" id="ci-${uid}" placeholder="Añadir comentario..." value="${esc(existing)}"><button class="save-btn" onclick="handleComment('${rowId}','${uid}',this)">Guardar</button></div><div class="flash" id="flc-${uid}"></div></div>`;
 }
 function handleComment(rowId,uid,btn){
   const val=document.getElementById('ci-'+uid).value.trim();
@@ -111,10 +84,7 @@ function buildFilters(){
   const deps=[...new Set(allAus.map(r=>r.departamento).filter(Boolean))].sort();
   const sups=[...new Set(allAus.map(r=>r.supervisor).filter(Boolean))].sort();
   const meses=[...new Set(allAus.map(r=>r.fecha?r.fecha.slice(0,7):null).filter(Boolean))].sort();
-  ['fil-dep'].forEach(id=>{
-    const el=document.getElementById(id);if(!el)return;
-    el.innerHTML=`<option value="">Depto: Todos</option>`+deps.map(d=>`<option>${d}</option>`).join('');
-  });
+  document.getElementById('fil-dep').innerHTML=`<option value="">Depto: Todos</option>`+deps.map(d=>`<option>${d}</option>`).join('');
   document.getElementById('fil-sup').innerHTML=`<option value="">Supervisor: Todos</option>`+sups.map(s=>`<option>${s}</option>`).join('');
   document.getElementById('fil-mes').innerHTML=`<option value="">Mes: Todos</option>`+meses.map(m=>`<option>${m}</option>`).join('');
 }
@@ -145,7 +115,7 @@ function renderAus(){
   tbody.innerHTML=slice.map((r,i)=>{
     const uid=`a${start+i}`;
     const rowBg=(r.tipo||'').toLowerCase().includes('no show')?'background:#fff8f8':'';
-    return `<tr style="${rowBg}">
+    return`<tr style="${rowBg}">
       <td style="color:#94a3b8;font-size:11px">${start+i+1}</td>
       <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500" title="${esc(r.empleado)}">${trunc(r.empleado,22)}</td>
       <td style="font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(r.supervisor)}">${(r.supervisor||'—').split(' ').slice(-1)[0]}</td>
@@ -172,7 +142,7 @@ function buildEmpData(){
     if(r.comentarios&&!empMap[k].comentarios)empMap[k].comentarios=r.comentarios;
     if(r.rowId&&!empMap[k].rowId)empMap[k].rowId=r.rowId;
   });
-  return allRoster.map(emp=>{
+  return ROSTER.map(emp=>{
     const n=emp.nombre.toLowerCase();
     const parts=n.split(',').map(s=>s.trim());
     const ap=parts[0]||'',fn=parts[1]||'';
@@ -210,7 +180,7 @@ function renderEmp(){
     else if(r.noshow>0){dot='dot-warn';lbl='Tiene no shows';rowBg='background:#fffbf0';}
     const totalColor=r.total===0?'#94a3b8':r.total>=5?'#e24b4a':r.total>=3?'#f5a623':'#0e9f7e';
     const uid=`e${start+i}`;
-    return `<tr style="${rowBg}">
+    return`<tr style="${rowBg}">
       <td style="color:#94a3b8;font-size:11px;font-family:monospace">${r.id}</td>
       <td style="white-space:normal;line-height:1.4;font-weight:500">${r.nombre}</td>
       <td style="text-align:center"><span style="font-size:15px;font-weight:600;color:${totalColor}">${r.total}</span></td>
@@ -232,7 +202,7 @@ function changePage(which,dir){
 }
 
 function updateMetrics(){
-  const total=allRoster.length;
+  const total=ROSTER.length;
   const empData=buildEmpData();
   const conReg=empData.filter(e=>e.total>0).length;
   const sinReg=empData.filter(e=>e.total===0).length;
@@ -276,13 +246,6 @@ function renderCharts(){
   barChart('c-top',toArr(eC),['#e24b4a','#d85a30','#f5a623','#0e9f7e','#378add','#7f77dd','#0d1b3e','#1a2d5a','#5DCAA5','#AFA9EC']);
 }
 
-async function iniciarApp(){
-  document.getElementById('setup-screen').style.display='none';
-  document.getElementById('app').style.display='flex';
-  allRoster=ROSTER;
-  await syncData();
-}
-
 async function syncData(){
   showLoader('Sincronizando con Smartsheet...');
   try{
@@ -294,13 +257,10 @@ async function syncData(){
     const now=new Date().toLocaleTimeString('es-PR');
     document.getElementById('sync-info').textContent=`Última sync: ${now} · ${allAus.length} registros`;
   }catch(e){
-    alert('Error conectando con Smartsheet: '+e.message+'\n\nVerifica tu token.');
+    alert('Error: '+e.message);
   }finally{
     hideLoader();
   }
 }
 
-(function boot(){
-  const token=getToken();
-  if(token)iniciarApp();
-})();
+syncData();
