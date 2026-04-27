@@ -70,4 +70,4 @@ app.get('*', function(req, res) {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, function() { console.log('Servidor corriendo en puerto ' + PORT); });
+app.listen(PORT, function() { console.log('Servidor v2 corriendo en puerto ' + PORT); });
