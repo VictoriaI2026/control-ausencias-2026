@@ -64,6 +64,9 @@ app.patch('/api/ausencias/:rowId', async (req, res) => {
 });
 
 const path = require('path');
+app.get('/app.js', function(req, res) {
+  res.sendFile(path.join(__dirname, 'public', 'app.js'));
+});
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('*', function(req, res) {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
