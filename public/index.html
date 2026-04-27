@@ -107,7 +107,7 @@ tr:hover td{background:#f8fafc}
     <label for="token-input">Token de acceso Smartsheet</label>
     <input type="password" id="token-input" placeholder="Pega tu token aquí..." autocomplete="off">
     <div class="tip">Para obtener tu token: en Smartsheet ve a <strong>Cuenta → Configuración personal → API Access → Generar nuevo token</strong>.</div>
-    <button class="btn-primary" onclick="conectar()">Conectar con Smartsheet</button>
+    <button class="btn-primary" type="button" id="btn-conectar">Conectar con Smartsheet</button>
     <div class="err-msg" id="err-msg"></div>
   </div>
 </div>
@@ -195,17 +195,27 @@ tr:hover td{background:#f8fafc}
       <div class="section-card">
         <p style="font-size:13px;color:#64748b;margin-bottom:1rem;line-height:1.6">Estrategias para garantizar que <strong style="color:#1e293b">todos los empleados sean registrados</strong>.</p>
         <div class="strategy-grid">
-          <div class="strat-card"><span class="strat-tag tag-b">Proceso</span><h4>Comparación diaria vs roster</h4><p>Cruce automático entre roster activo y Smartsheet. Sin registro ese día activa alerta al supervisor.</p></div>
+          <div class="strat-card"><span class="strat-tag tag-b">Proceso</span><h4>Comparación diaria vs roster</h4><p>Cruce automático entre roster activo y Smartsheet.</p></div>
           <div class="strat-card"><span class="strat-tag tag-a">Seguimiento</span><h4>Recordatorio automático</h4><p>Automatización en Smartsheet a las 10am para supervisores sin envío del día.</p></div>
-          <div class="strat-card"><span class="strat-tag tag-g">Control</span><h4>Formulario de confirmación</h4><p>Segundo formulario diario. Sin envío = ausencia pendiente de reporte.</p></div>
-          <div class="strat-card"><span class="strat-tag tag-p">Incentivo</span><h4>Bono ligado al reporte</h4><p>El bono del supervisor se vincula a su tasa de reporte de brigada.</p></div>
-          <div class="strat-card"><span class="strat-tag tag-c">Visibilidad</span><h4>Tablero semanal</h4><p>Este dashboard identifica empleados sin ausencia registrada para validación semanal.</p></div>
-          <div class="strat-card"><span class="strat-tag tag-b">Bono</span><h4>Cálculo de bono</h4><p>Solo empleados con al menos 1 registro en el período califican para bono.</p></div>
+          <div class="strat-card"><span class="strat-tag tag-g">Control</span><h4>Formulario de confirmación</h4><p>Segundo formulario diario. Sin envío = ausencia pendiente.</p></div>
+          <div class="strat-card"><span class="strat-tag tag-p">Incentivo</span><h4>Bono ligado al reporte</h4><p>El bono del supervisor se vincula a su tasa de reporte.</p></div>
+          <div class="strat-card"><span class="strat-tag tag-c">Visibilidad</span><h4>Tablero semanal</h4><p>Identifica empleados sin ausencia registrada para validación semanal.</p></div>
+          <div class="strat-card"><span class="strat-tag tag-b">Bono</span><h4>Cálculo de bono</h4><p>Solo empleados con al menos 1 registro califican para bono.</p></div>
         </div>
       </div>
     </div>
   </main>
 </div>
 <script src="app.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('btn-conectar').addEventListener('click', function() {
+    var token = document.getElementById('token-input').value.trim();
+    if (!token) { alert('Ingresa tu token de Smartsheet.'); return; }
+    localStorage.setItem('ss_token', token);
+    location.reload();
+  });
+});
+</script>
 </body>
 </html>
