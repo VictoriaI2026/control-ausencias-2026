@@ -539,7 +539,9 @@ function syncData(){
     hideLoader();
   }).catch(function(e){hideLoader();alert("Error: "+e.message);});
 }
-  var ROSTER=[];
+  </script>
+<script src="roster.js"></script>
+<script>
 buildRosterIndex();
 syncData();
 </script>
