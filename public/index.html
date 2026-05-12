@@ -90,6 +90,16 @@ tr:hover td{background:#f8fafc}
 .loading-overlay p{color:#fff;font-size:13px}
 .rank-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:11px;font-weight:600}
 .rank-1{background:var(--yellow);color:var(--navy)}.rank-2{background:#94a3b8;color:#fff}.rank-3{background:var(--coral);color:#fff}.rank-other{background:#f1f5f9;color:#64748b}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}
+.cal-header{font-size:10px;font-weight:600;color:#4c1d95;text-align:center;padding:4px}
+.cal-day{min-height:50px;border-radius:6px;padding:4px;background:#f5f3ff;border:1px solid #ede9fe;position:relative}
+.cal-day.empty{background:transparent;border-color:transparent}
+.cal-day.has-abs{background:#ede9fe;border-color:#c4b5fd;cursor:pointer}
+.cal-day.has-abs:hover{background:#ddd6fe}
+.cal-num{font-size:10px;color:#64748b;margin-bottom:3px;font-weight:500}
+.cal-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin:1px}
+.cal-legend{display:flex;gap:12px;font-size:11px;color:#64748b;margin-top:12px;flex-wrap:wrap}
+.cal-legend span{display:flex;align-items:center;gap:4px}
 .compare-col{background:#f5f3ff;border-radius:10px;padding:1rem;border:1px solid #ddd6fe}
 .compare-col h3{font-size:13px;font-weight:600;color:#2e1065;margin-bottom:12px}
 .compare-stat{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #ddd6fe;font-size:12px}
@@ -127,6 +137,7 @@ tr:hover td{background:#f8fafc}
       <button class="tab-btn" onclick="showTab('top20',this)">Top 20</button>
       <button class="tab-btn" onclick="showTab('meses',this)">Por mes</button>
      <button class="tab-btn" onclick="showTab('comparar',this)">Comparar meses</button>
+      <button class="tab-btn" onclick="showTab('calendario',this)">Calendario</button>
       <button class="tab-btn" onclick="showTab('resumen',this)">Resumen visual</button>
     </div>
 
@@ -203,6 +214,15 @@ tr:hover td{background:#f8fafc}
         </div>
       </div>
     </div>
+    <div id="tab-calendario" class="tab-panel">
+  <div class="section-card">
+    <div class="filters">
+      <select id="cal-mes" onchange="renderCalendario()"><option value="">Mes: Selecciona</option></select>
+      <span class="count-pill" id="cal-count"></span>
+    </div>
+    <div id="calendario-content"></div>
+  </div>
+</div>
 <div id="tab-comparar" class="tab-panel">
   <div class="section-card">
     <div class="filters" style="margin-bottom:1rem">
@@ -358,6 +378,7 @@ function buildFilters(){
   var mOpts='<option value="">Selecciona</option>'+meses.map(function(m){var p=m.split("-");return'<option value="'+m+'">'+(MESES[p[1]]||p[1])+" "+p[0]+"</option>";}).join("");
 document.getElementById("comp-mes1").innerHTML=mOpts;
 document.getElementById("comp-mes2").innerHTML=mOpts;
+document.getElementById("cal-mes").innerHTML='<option value="">Mes: Selecciona</option>'+meses.map(function(m){var p=m.split("-");return'<option value="'+m+'">'+(MESES[p[1]]||p[1])+" "+p[0]+"</option>";}).join("");
 }
 
 function applyChartFilter(field,value){
@@ -585,6 +606,7 @@ function showTab(tab,btn){
   if(tab==="top20")renderTop20();
   if(tab==="meses")renderMeses();
   if(tab==="comparar")renderComparar();
+  if(tab==="calendario")renderCalendario();
 }
 
 function barChart(id,data,colors,filterField){
@@ -618,6 +640,49 @@ function renderCharts(){
   var ma=toArr(mC).sort(function(a,b){return a.k.localeCompare(b.k);});
   for(var i=0;i<ma.length;i++){var p=ma[i].k.split("-");ma[i].displayK=(MESES[p[1]]||p[1])||ma[i].k;ma[i].lbl=ma[i].displayK;}
   barChart("c-mes",ma,["#0D1B3E","#1A2D5A","#1A56DB","#0E9F7E","#7F77DD","#FFD100"],"mes");
+}
+  function renderCalendario(){
+  var mes=document.getElementById("cal-mes").value;
+  if(!mes){document.getElementById("calendario-content").innerHTML='<p style="color:#94a3b8;font-size:13px;padding:1rem">Selecciona un mes para ver el calendario.</p>';return;}
+  var p=mes.split("-");var year=parseInt(p[0]),month=parseInt(p[1])-1;
+  var diasMap={};
+  for(var i=0;i<allAus.length;i++){
+    var r=allAus[i];if(!r.fecha||r.fecha.slice(0,7)!==mes)continue;
+    var dia=r.fecha.slice(8,10);if(!diasMap[dia])diasMap[dia]=[];
+    diasMap[dia].push(r);
+  }
+  var totalDias=Object.keys(diasMap).length;
+  var totalAus=0;for(var d in diasMap)totalAus+=diasMap[d].length;
+  document.getElementById("cal-count").textContent=totalAus+" ausencias en "+totalDias+" dias";
+  var DIAS=["Dom","Lun","Mar","Mie","Jue","Vie","Sab"];
+  var firstDay=new Date(year,month,1).getDay();
+  var lastDay=new Date(year,month+1,0).getDate();
+  var html='<h3 style="font-size:13px;font-weight:600;color:#2e1065;margin-bottom:12px">'+(MESES[p[1]]||p[1])+" "+year+"</h3>";
+  html+='<div class="cal-grid">';
+  for(var i=0;i<7;i++)html+='<div class="cal-header">'+DIAS[i]+"</div>";
+  for(var i=0;i<firstDay;i++)html+='<div class="cal-day empty"></div>';
+  for(var d=1;d<=lastDay;d++){
+    var dStr=String(d).padStart(2,"0");var abs=diasMap[dStr]||[];
+    var cls="cal-day"+(abs.length>0?" has-abs":"");
+    var title=abs.length>0?abs.length+" ausencia(s)":"";
+    html+='<div class="'+cls+'" title="'+title+'">';
+    html+='<div class="cal-num">'+d+"</div>";
+    var ns=0,enf=0,otro=0;
+    for(var j=0;j<abs.length;j++){
+      var t=(abs[j].tipo||"").toLowerCase();
+      if(t.indexOf("no show")>=0)ns++;
+      else if(t.indexOf("enfer")>=0)enf++;
+      else otro++;
+    }
+    if(ns>0)html+='<span class="cal-dot" style="background:#e24b4a" title="No shows: '+ns+'"></span>';
+    if(enf>0)html+='<span class="cal-dot" style="background:#f59e0b" title="Enfermedad: '+enf+'"></span>';
+    if(otro>0)html+='<span class="cal-dot" style="background:#7c3aed" title="Otro: '+otro+'"></span>';
+    if(abs.length>0)html+='<div style="font-size:9px;color:#4c1d95;font-weight:600;margin-top:2px">'+abs.length+"</div>";
+    html+="</div>";
+  }
+  html+="</div>";
+  html+='<div class="cal-legend"><span><span class="cal-dot" style="background:#e24b4a;display:inline-block"></span>No show</span><span><span class="cal-dot" style="background:#f59e0b;display:inline-block"></span>Enfermedad</span><span><span class="cal-dot" style="background:#7c3aed;display:inline-block"></span>Otro</span></div>';
+  document.getElementById("calendario-content").innerHTML=html;
 }
 function renderComparar(){
   var m1=document.getElementById("comp-mes1").value;
