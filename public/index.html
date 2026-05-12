@@ -67,7 +67,8 @@ tr:hover td{background:#f8fafc}
 .save-btn:disabled{opacity:.5;cursor:default}
 .flash{font-size:10px;height:14px;line-height:14px}
 .flash.ok{color:var(--teal)}.flash.err{color:#e24b4a}
-.attach-btn{font-size:10px;padding:2px 7px;cursor:pointer;background:var(--royal);border:none;border-radius:5px;color:#fff;white-space:nowrap;text-decoration:none;display:inline-block}
+.attach-btn{font-size:10px;padding:2px 7px;cursor:pointer;background:#7c3aed;border:none;border-radius:5px;color:#fff;white-space:nowrap;text-decoration:none;display:inline-block;font-weight:500}
+.attach-btn:hover{background:#4c1d95}
 .attach-btn:hover{background:var(--navy2)}
 .attach-list{display:flex;flex-direction:column;gap:3px}
 .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem}
@@ -113,7 +114,7 @@ tr:hover td{background:#f8fafc}
       <div class="m-card c1"><div class="deco"></div><div class="lbl">Empleados de campo</div><div class="val" id="m-total">--</div><div class="sub">En roster activo</div></div>
       <div class="m-card c2"><div class="deco"></div><div class="lbl">Con ausencia registrada</div><div class="val" id="m-reg">--</div><div class="sub" id="m-reg-pct">--</div></div>
       <div class="m-card c3"><div class="deco"></div><div class="lbl">No shows</div><div class="val" id="m-ns">--</div><div class="sub" id="m-ns-pct">--</div></div>
-      <div class="m-card c4"><div class="deco"></div><div class="lbl">Sin registro</div><div class="val" id="m-noreg">--</div><div class="sub">Posible falta de reporte</div></div>
+     <div class="m-card c4"><div class="deco"></div><div class="lbl">Total ausencias</div><div class="val" id="m-noreg">--</div><div class="sub">Registradas en 2026</div></div>
     </div>
     <div id="alert-zone"></div>
     <div class="tabs">
@@ -549,7 +550,7 @@ function updateMetrics(){
   document.getElementById("m-reg-pct").textContent=Math.round(cr/total*100)+"% de la plantilla";
   document.getElementById("m-ns").textContent=ns;
   document.getElementById("m-ns-pct").textContent=Math.round(ns/Math.max(allAus.length,1)*100)+"% del total";
-  document.getElementById("m-noreg").textContent=sr;
+  document.getElementById("m-noreg").textContent=allAus.length.toLocaleString();
   document.getElementById("alert-zone").innerHTML=sr>0?'<div class="alert-box"><strong>'+sr+" empleados de campo</strong> sin ausencia registrada en 2026.</div>":"";
 }
 
