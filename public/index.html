@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Control de Ausencias 2026</title>
-<style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
 :root{
@@ -18,7 +19,8 @@ header h1{font-size:15px;font-weight:500;color:#fff;display:flex;align-items:cen
 .dot{width:8px;height:8px;border-radius:50%;background:#a78bfa;display:inline-block}
 .header-right{display:flex;align-items:center;gap:10px}
 .sync-info{font-size:11px;color:rgba(255,255,255,.5)}
-.btn-sync{font-size:11px;padding:5px 13px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:7px;color:#fff;cursor:pointer}
+.btn-export{font-size:11px;padding:5px 12px;background:#7c3aed;color:#fff;border:none;border-radius:7px;cursor:pointer;font-weight:500}
+.btn-export:hover{background:#4c1d95}
 main{padding:1.25rem;flex:1;background:#ede9fe}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.25rem}
 @media(max-width:700px){.metrics{grid-template-columns:repeat(2,1fr)}}
@@ -133,7 +135,7 @@ tr:hover td{background:#f8fafc}
           <select id="fil-dep" onchange="filterAus()"><option value="">Depto: Todos</option></select>
           <select id="fil-mes" onchange="filterAus()"><option value="">Mes: Todos</option></select>
           <select id="fil-shr" onchange="filterAus()"><option value="">Status HR: Todos</option><option>Validado</option><option>Pendiente</option><option>Aprobado</option><option>Rechazado</option></select>
-          <span class="count-pill" id="aus-count"></span>
+          <button class="btn-export" onclick="exportExcel()">Exportar Excel</button>
           <span id="filter-badge" style="display:none" class="filter-active-badge" onclick="clearChartFilter()">✕ Limpiar filtro</span>
         </div>
         <div class="tbl-wrap">
@@ -609,7 +611,17 @@ function syncData(){
   }).catch(function(e){hideLoader();alert("Error: "+e.message);});
 }
 buildRosterIndex();
-syncData();
+function exportExcel(){
+  var data=[["#","ID","Empleado","Supervisor","Departamento","Tipo","Fecha","Status HR","Comentarios","Justificacion"]];
+  for(var i=0;i<filteredAus.length;i++){
+    var r=filteredAus[i];
+    data.push([i+1,getEmpId(r.empleado),getEmpNombre(r.empleado),r.supervisor,r.departamento,r.tipo,r.fecha,r.statusHR,r.comentarios,r.justificacion]);
+  }
+  var wb=XLSX.utils.book_new();
+  var ws=XLSX.utils.aoa_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb,ws,"Ausencias");
+  XLSX.writeFile(wb,"ausencias_2026.xlsx");
+}syncData();
 </script>
 </body>
 </html>
