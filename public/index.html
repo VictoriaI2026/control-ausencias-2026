@@ -6,12 +6,15 @@
 <title>Control de Ausencias 2026</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--navy:#0d1b3e;--navy2:#1a2d5a;--teal:#0e9f7e;--amber:#f5a623;--red:#e24b4a;--blue:#378add;--blue-light:#e6f1fb;--coral:#d85a30;--purple:#7f77dd;--gray-bg:#f0f2f7}
+:root{
+  --navy:#0D1B3E;--navy2:#1A2D5A;--royal:#1A56DB;--teal:#0E9F7E;
+  --yellow:#FFD100;--violet:#7F77DD;--coral:#d85a30;--gray-bg:#f0f2f7
+}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--gray-bg);color:#1e293b;font-size:14px;min-height:100vh}
 #app{display:flex;flex-direction:column;min-height:100vh}
 header{background:var(--navy);padding:.85rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 header h1{font-size:15px;font-weight:500;color:#fff;display:flex;align-items:center;gap:8px}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--teal);display:inline-block}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block}
 .header-right{display:flex;align-items:center;gap:10px}
 .sync-info{font-size:11px;color:rgba(255,255,255,.5)}
 .btn-sync{font-size:11px;padding:5px 13px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:7px;color:#fff;cursor:pointer}
@@ -19,12 +22,13 @@ main{padding:1.25rem;flex:1}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.25rem}
 @media(max-width:700px){.metrics{grid-template-columns:repeat(2,1fr)}}
 .m-card{border-radius:12px;padding:.9rem 1.1rem;position:relative;overflow:hidden}
-.m-card.c1{background:var(--navy2)}.m-card.c2{background:var(--teal)}.m-card.c3{background:var(--red)}.m-card.c4{background:var(--amber)}
-.m-card .lbl{font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.m-card.c1{background:var(--navy2)}.m-card.c2{background:var(--teal)}.m-card.c3{background:#c0392b}.m-card.c4{background:var(--yellow)}
+.m-card.c4 .lbl,.m-card.c4 .val,.m-card.c4 .sub{color:var(--navy)}
+.m-card .lbl{font-size:10px;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
 .m-card .val{font-size:26px;font-weight:600;color:#fff}
-.m-card .sub{font-size:10px;color:rgba(255,255,255,.6);margin-top:3px}
-.m-card .deco{position:absolute;right:-12px;top:-12px;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.07)}
-.alert-box{background:#fff3cd;border-left:3px solid var(--amber);border-radius:8px;padding:.7rem 1rem;margin-bottom:1rem;font-size:12px;color:#7a5200}
+.m-card .sub{font-size:10px;color:rgba(255,255,255,.7);margin-top:3px}
+.m-card .deco{position:absolute;right:-12px;top:-12px;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.08)}
+.alert-box{background:#fff8d6;border-left:3px solid var(--yellow);border-radius:8px;padding:.7rem 1rem;margin-bottom:1rem;font-size:12px;color:#7a5200}
 .tabs{display:flex;gap:4px;background:#fff;border-radius:10px;padding:4px;border:1px solid #e2e8f0;margin-bottom:1rem;flex-wrap:wrap}
 .tab-btn{font-size:12px;padding:7px 12px;cursor:pointer;background:transparent;border:none;border-radius:7px;color:#64748b;white-space:nowrap}
 .tab-btn.active{background:var(--navy);color:#fff;font-weight:500}
@@ -35,6 +39,7 @@ main{padding:1.25rem;flex:1}
 .filters select,.filters input[type=text]{font-size:12px;padding:6px 10px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;color:#1e293b;height:34px}
 .filters input[type=text]{min-width:180px}
 .count-pill{font-size:11px;color:#64748b;background:#f1f5f9;padding:3px 10px;border-radius:8px}
+.filter-active-badge{font-size:11px;background:var(--royal);color:#fff;padding:3px 10px;border-radius:8px;cursor:pointer}
 .tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid #e2e8f0}
 table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
 th{background:#f8fafc;padding:9px 10px;text-align:left;font-weight:500;font-size:11px;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;overflow:hidden}
@@ -42,45 +47,53 @@ td{padding:7px 9px;border-bottom:1px solid #f1f5f9;color:#1e293b;overflow:hidden
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#f8fafc}
 .badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;line-height:1.5;white-space:nowrap}
-.b-enf{background:#faece7;color:#993c1d}.b-vac{background:#e1f5ee;color:#0f6e56}.b-ns{background:#fcebeb;color:#a32d2d}.b-per{background:#e6f1fb;color:#185fa5}.b-lic{background:#eeedfe;color:#534ab7}.b-otro{background:#f1f5f9;color:#64748b}
-.b-val{background:#e1f5ee;color:#0f6e56}.b-pen{background:#faeeda;color:#854f0b}.b-apr{background:#e6f1fb;color:#185fa5}.b-rec{background:#fcebeb;color:#a32d2d}
+.b-enf{background:#faece7;color:#993c1d}.b-vac{background:#e1f5ee;color:#0f6e56}.b-ns{background:#fcebeb;color:#a32d2d}.b-per{background:#dbeafe;color:#1e40af}.b-lic{background:#ede9fe;color:#5b21b6}.b-otro{background:#f1f5f9;color:#64748b}
+.b-val{background:#e1f5ee;color:#0f6e56}.b-pen{background:#fef3c7;color:#92400e}.b-apr{background:#dbeafe;color:#1e40af}.b-rec{background:#fcebeb;color:#a32d2d}
 .status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}
-.dot-ok{background:#1d9e75}.dot-warn{background:#f5a623}.dot-err{background:#e24b4a}.dot-gray{background:#94a3b8}
-.ss-pill{font-size:9px;background:var(--blue-light);color:#185fa5;padding:1px 6px;border-radius:5px;font-weight:500;white-space:nowrap;margin-left:3px}
+.dot-ok{background:#1d9e75}.dot-warn{background:var(--yellow)}.dot-err{background:#e24b4a}.dot-gray{background:#94a3b8}
+.ss-pill{font-size:9px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:5px;font-weight:500;white-space:nowrap;margin-left:3px}
 .pagination{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12px;color:#64748b}
 .pagination button{padding:5px 14px;font-size:12px;cursor:pointer;background:#fff;border:1px solid #e2e8f0;border-radius:7px;color:#1e293b}
 .pagination button:hover:not(:disabled){background:#f8fafc}
 .pagination button:disabled{opacity:.4;cursor:default}
 .editable-cell{display:flex;flex-direction:column;gap:3px;min-width:0}
-.comment-existing{font-size:11px;color:#64748b;background:#f8fafc;border-left:2px solid #e2e8f0;border-radius:0 5px 5px 0;padding:3px 7px;line-height:1.4;word-break:break-word}
+.comment-existing{font-size:11px;color:#64748b;background:#f8fafc;border-left:2px solid var(--royal);border-radius:0 5px 5px 0;padding:3px 7px;line-height:1.4;word-break:break-word}
 .input-row{display:flex;gap:3px;align-items:center}
 .input-row input[type=text]{font-size:11px;padding:3px 7px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#1e293b;flex:1;min-width:0;height:27px}
 .status-select{font-size:11px;padding:2px 5px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#1e293b;height:27px;width:100%;cursor:pointer}
 .save-btn{font-size:10px;padding:0 9px;cursor:pointer;background:var(--navy);border:none;border-radius:6px;color:#fff;white-space:nowrap;flex-shrink:0;height:27px;font-weight:500}
 .save-btn:disabled{opacity:.5;cursor:default}
 .flash{font-size:10px;height:14px;line-height:14px}
-.flash.ok{color:var(--teal)}.flash.err{color:var(--red)}
+.flash.ok{color:var(--teal)}.flash.err{color:#e24b4a}
+.attach-btn{font-size:10px;padding:2px 7px;cursor:pointer;background:var(--royal);border:none;border-radius:5px;color:#fff;white-space:nowrap;text-decoration:none;display:inline-block}
+.attach-btn:hover{background:var(--navy2)}
+.attach-list{display:flex;flex-direction:column;gap:3px}
 .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem}
 @media(max-width:600px){.chart-row{grid-template-columns:1fr}}
 .chart-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:1rem}
-.chart-card h3{font-size:11px;font-weight:500;margin-bottom:12px;color:#64748b;text-transform:uppercase;letter-spacing:.06em}
-.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.chart-card h3{font-size:11px;font-weight:500;margin-bottom:4px;color:#64748b;text-transform:uppercase;letter-spacing:.06em}
+.chart-hint{font-size:10px;color:#94a3b8;margin-bottom:10px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;border-radius:6px;padding:2px 4px}
+.bar-row:hover{background:#f1f5f9}
+.bar-row.selected{background:#dbeafe}
 .bar-label{font-size:11px;color:#64748b;width:110px;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bar-track{flex:1;height:14px;background:#f1f5f9;border-radius:6px;overflow:hidden}
-.bar-fill{height:100%;border-radius:6px}
+.bar-fill{height:100%;border-radius:6px;transition:width .4s ease}
 .bar-count{font-size:11px;color:#94a3b8;width:30px;flex-shrink:0;text-align:right}
-.loading-overlay{display:none;position:fixed;inset:0;background:rgba(13,27,62,.55);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(13,27,62,.6);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:12px}
 .loading-overlay.show{display:flex}
-.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--yellow);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-overlay p{color:#fff;font-size:13px}
 .rank-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:11px;font-weight:600}
-.rank-1{background:#f5a623;color:#fff}.rank-2{background:#94a3b8;color:#fff}.rank-3{background:#d85a30;color:#fff}.rank-other{background:#f1f5f9;color:#64748b}
+.rank-1{background:var(--yellow);color:var(--navy)}.rank-2{background:#94a3b8;color:#fff}.rank-3{background:var(--coral);color:#fff}.rank-other{background:#f1f5f9;color:#64748b}
 .month-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:8px}
-.month-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:.75rem;text-align:center}
-.month-card .mn{font-size:11px;color:#64748b;margin-bottom:4px;font-weight:500}
-.month-card .mv{font-size:22px;font-weight:600;color:var(--navy2)}
-.month-card .ms{font-size:10px;color:#94a3b8;margin-top:2px}
+.month-card{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);border-radius:10px;padding:.75rem;text-align:center;cursor:pointer;transition:transform .15s}
+.month-card:hover{transform:scale(1.03)}
+.month-card.selected{outline:3px solid var(--yellow)}
+.month-card .mn{font-size:11px;color:rgba(255,255,255,.7);margin-bottom:4px;font-weight:500}
+.month-card .mv{font-size:22px;font-weight:600;color:var(--yellow)}
+.month-card .ms{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px}
 </style>
 </head>
 <body>
@@ -108,6 +121,7 @@ tr:hover td{background:#f8fafc}
       <button class="tab-btn" onclick="showTab('meses',this)">Por mes</button>
       <button class="tab-btn" onclick="showTab('resumen',this)">Resumen visual</button>
     </div>
+
     <div id="tab-ausencias" class="tab-panel active">
       <div class="section-card">
         <div class="filters">
@@ -117,12 +131,13 @@ tr:hover td{background:#f8fafc}
           <select id="fil-mes" onchange="filterAus()"><option value="">Mes: Todos</option></select>
           <select id="fil-shr" onchange="filterAus()"><option value="">Status HR: Todos</option><option>Validado</option><option>Pendiente</option><option>Aprobado</option><option>Rechazado</option></select>
           <span class="count-pill" id="aus-count"></span>
+          <span id="filter-badge" style="display:none" class="filter-active-badge" onclick="clearChartFilter()">✕ Limpiar filtro</span>
         </div>
         <div class="tbl-wrap">
           <table>
-            <colgroup><col style="width:26px"><col style="width:55px"><col style="width:145px"><col style="width:80px"><col style="width:80px"><col style="width:68px"><col style="width:68px"><col style="width:118px"><col style="width:115px"><col style="width:155px"></colgroup>
-            <thead><tr><th>#</th><th>ID</th><th>Empleado</th><th>Supervisor</th><th>Depto</th><th>Tipo</th><th>Fecha</th><th>Status HR <span class="ss-pill">Live</span></th><th>Comentarios <span class="ss-pill">Live</span></th><th>Justificacion</th></tr></thead>
-            <tbody id="aus-tbody"><tr><td colspan="10" style="text-align:center;padding:2rem;color:#94a3b8">Cargando...</td></tr></tbody>
+            <colgroup><col style="width:26px"><col style="width:52px"><col style="width:138px"><col style="width:78px"><col style="width:75px"><col style="width:65px"><col style="width:66px"><col style="width:112px"><col style="width:110px"><col style="width:100px"><col style="width:80px"></colgroup>
+            <thead><tr><th>#</th><th>ID</th><th>Empleado</th><th>Supervisor</th><th>Depto</th><th>Tipo</th><th>Fecha</th><th>Status HR <span class="ss-pill">Live</span></th><th>Comentarios <span class="ss-pill">Live</span></th><th>Justificacion</th><th>Adjuntos</th></tr></thead>
+            <tbody id="aus-tbody"><tr><td colspan="11" style="text-align:center;padding:2rem;color:#94a3b8">Cargando...</td></tr></tbody>
           </table>
         </div>
         <div class="pagination">
@@ -132,6 +147,7 @@ tr:hover td{background:#f8fafc}
         </div>
       </div>
     </div>
+
     <div id="tab-empleados" class="tab-panel">
       <div class="section-card">
         <div class="filters">
@@ -154,6 +170,7 @@ tr:hover td{background:#f8fafc}
         </div>
       </div>
     </div>
+
     <div id="tab-top20" class="tab-panel">
       <div class="section-card">
         <p style="font-size:12px;color:#64748b;margin-bottom:1rem">Top 20 empleados de campo con mayor cantidad de ausencias acumuladas en 2026.</p>
@@ -166,9 +183,10 @@ tr:hover td{background:#f8fafc}
         </div>
       </div>
     </div>
+
     <div id="tab-meses" class="tab-panel">
       <div class="section-card">
-        <p style="font-size:12px;color:#64748b;margin-bottom:1rem">Desglose mensual del total de ausencias registradas en 2026.</p>
+        <p style="font-size:12px;color:#64748b;margin-bottom:1rem">Haz clic en un mes para filtrar las ausencias de ese mes en la tabla principal.</p>
         <div id="month-grid" class="month-grid"></div>
         <div style="margin-top:1.5rem">
           <h3 style="font-size:12px;font-weight:500;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Detalle por mes y tipo</h3>
@@ -176,26 +194,29 @@ tr:hover td{background:#f8fafc}
         </div>
       </div>
     </div>
+
     <div id="tab-resumen" class="tab-panel">
       <div class="chart-row">
-        <div class="chart-card"><h3>Tipo de ausencia</h3><div id="c-tipo"></div></div>
-        <div class="chart-card"><h3>Por departamento</h3><div id="c-dep"></div></div>
+        <div class="chart-card"><h3>Tipo de ausencia</h3><p class="chart-hint">Haz clic para filtrar</p><div id="c-tipo"></div></div>
+        <div class="chart-card"><h3>Por departamento</h3><p class="chart-hint">Haz clic para filtrar</p><div id="c-dep"></div></div>
       </div>
       <div class="chart-row">
-        <div class="chart-card"><h3>Por supervisor</h3><div id="c-sup"></div></div>
-        <div class="chart-card"><h3>Por mes</h3><div id="c-mes"></div></div>
+        <div class="chart-card"><h3>Por supervisor</h3><p class="chart-hint">Haz clic para filtrar</p><div id="c-sup"></div></div>
+        <div class="chart-card"><h3>Por mes</h3><p class="chart-hint">Haz clic para filtrar</p><div id="c-mes"></div></div>
       </div>
     </div>
   </main>
 </div>
+<script src="roster.js"></script>
 <script>
 var PAGE=40;
 var HR_OPTIONS=["Validado","Pendiente","Aprobado","Rechazado","En revision"];
 var TIPOS={"Enfermedad":"b-enf","No show":"b-ns","Vacaciones":"b-vac","Personal":"b-per","FMLA":"b-lic"};
-var BAR_COLORS=["#0d1b3e","#0e9f7e","#e24b4a","#378add","#7f77dd","#d85a30","#f5a623"];
+var WINDMAR_COLORS=["#0D1B3E","#1A56DB","#0E9F7E","#7F77DD","#FFD100","#1A2D5A","#2563EB","#059669"];
 var MESES={"01":"Enero","02":"Febrero","03":"Marzo","04":"Abril","05":"Mayo","06":"Junio","07":"Julio","08":"Agosto","09":"Septiembre","10":"Octubre","11":"Noviembre","12":"Diciembre"};
 var allAus=[],filteredAus=[],filteredEmp=[],ausPage=0,empPage=0;
 var rosterByApellido={};
+var activeChartFilter={field:null,value:null};
 
 function buildRosterIndex(){
   rosterByApellido={};
@@ -226,7 +247,6 @@ function findEmployee(ssName){
 
 function getEmpId(ssName){var e=findEmployee(ssName);return e?e.id:"";}
 function getEmpNombre(ssName){var e=findEmployee(ssName);return e?e.nombre:invertirNombre(ssName);}
-function getEmpSup(ssName){var e=findEmployee(ssName);return e?e.supervisor:"";}
 
 function invertirNombre(nombre){
   if(!nombre)return nombre;
@@ -243,6 +263,25 @@ function esc(s){return (s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").repl
 function tr2(s,n){return s&&s.length>n?s.slice(0,n)+"...":(s||"--");}
 function tipoBadge(t){var k=null;var keys=Object.keys(TIPOS);for(var i=0;i<keys.length;i++){if(t&&t.toLowerCase().indexOf(keys[i].toLowerCase())>=0){k=keys[i];break;}}return '<span class="badge '+(k?TIPOS[k]:"b-otro")+'">'+esc(t||"--")+"</span>";}
 function flashEl(el,cls,msg){if(!el)return;el.className="flash"+(cls?" "+cls:"");el.textContent=msg;if(cls==="ok")setTimeout(function(){el.textContent="";},3000);}
+
+function openAttachment(attachId){
+  fetch("/api/attachment/"+attachId)
+  .then(function(r){return r.json();})
+  .then(function(d){if(d.url)window.open(d.url,"_blank");else alert("No se pudo obtener el link.");})
+  .catch(function(){alert("Error al obtener el adjunto.");});
+}
+
+function attachCell(attachments){
+  if(!attachments||attachments.length===0)return '<span style="color:#94a3b8;font-size:11px">--</span>';
+  var html='<div class="attach-list">';
+  for(var i=0;i<attachments.length;i++){
+    var a=attachments[i];
+    var name=tr2(a.name,18);
+    html+='<button class="attach-btn" onclick="openAttachment(\''+a.id+'\')">📎 '+esc(name)+"</button>";
+  }
+  html+="</div>";
+  return html;
+}
 
 function ssCell(rowId,field,value,btn,fl){
   if(!rowId){flashEl(fl,"err","Sin ID");return;}
@@ -297,6 +336,22 @@ function buildFilters(){
   document.getElementById("fil-mes").innerHTML='<option value="">Mes: Todos</option>'+meses.map(function(m){return"<option>"+m+"</option>";}).join("");
 }
 
+function applyChartFilter(field,value){
+  activeChartFilter={field:field,value:value};
+  var badge=document.getElementById("filter-badge");
+  badge.style.display="inline-block";
+  badge.textContent="✕ "+value;
+  filterAus();
+  showTab("ausencias",document.querySelector(".tab-btn"));
+}
+
+function clearChartFilter(){
+  activeChartFilter={field:null,value:null};
+  document.getElementById("filter-badge").style.display="none";
+  filterAus();
+  renderCharts();
+}
+
 function filterAus(){
   var q=document.getElementById("srch-aus").value.toLowerCase();
   var tip=document.getElementById("fil-tipo").value;
@@ -309,6 +364,10 @@ function filterAus(){
     if(dep&&r.departamento!==dep)return false;
     if(mes&&(r.fecha||"").indexOf(mes)!==0)return false;
     if(shr&&r.statusHR!==shr)return false;
+    if(activeChartFilter.field==="tipo"&&r.tipo!==activeChartFilter.value)return false;
+    if(activeChartFilter.field==="dep"&&r.departamento!==activeChartFilter.value)return false;
+    if(activeChartFilter.field==="sup"&&r.supervisor!==activeChartFilter.value)return false;
+    if(activeChartFilter.field==="mes"&&!(r.fecha||"").startsWith(activeChartFilter.value))return false;
     return true;
   });
   ausPage=0;renderAus();
@@ -319,25 +378,25 @@ function renderAus(){
   var start=ausPage*PAGE;
   var slice=filteredAus.slice(start,start+PAGE);
   document.getElementById("aus-count").textContent=filteredAus.length+" registros";
-  if(!slice.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:2rem;color:#94a3b8">No hay registros</td></tr>';return;}
+  if(!slice.length){tbody.innerHTML='<tr><td colspan="11" style="text-align:center;padding:2rem;color:#94a3b8">No hay registros</td></tr>';return;}
   var html="";
   for(var i=0;i<slice.length;i++){
     var r=slice[i];var uid="a"+(start+i);
     var bg=(r.tipo||"").toLowerCase().indexOf("no show")>=0?"background:#fff8f8":"";
     var empId=getEmpId(r.empleado);
     var nomDisp=getEmpNombre(r.empleado);
-    var supDisp=r.supervisor||"--";
     html+='<tr style="'+bg+'">';
     html+='<td style="color:#94a3b8;font-size:11px">'+(start+i+1)+"</td>";
     html+='<td style="color:#94a3b8;font-size:11px;font-family:monospace">'+(empId||"--")+"</td>";
-    html+='<td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500" title="'+esc(nomDisp)+'">'+tr2(nomDisp,22)+"</td>";
-    html+='<td style="font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+tr2(supDisp,14)+"</td>";
+    html+='<td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500" title="'+esc(nomDisp)+'">'+tr2(nomDisp,20)+"</td>";
+    html+='<td style="font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+tr2(r.supervisor,13)+"</td>";
     html+='<td style="font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(r.departamento||"--")+"</td>";
     html+="<td>"+tipoBadge(r.tipo)+"</td>";
     html+='<td style="font-size:11px;white-space:nowrap;color:#64748b">'+(r.fecha||"--")+"</td>";
     html+="<td>"+hrSelect(r.rowId||"",r.statusHR||"",uid)+"</td>";
     html+="<td>"+cmtCell(r.rowId||"",r.comentarios||"",uid)+"</td>";
-    html+='<td style="font-size:11px;white-space:normal;line-height:1.4;color:#64748b" title="'+esc(r.justificacion)+'">'+tr2(r.justificacion,55)+"</td>";
+    html+='<td style="font-size:11px;white-space:normal;line-height:1.4;color:#64748b">'+tr2(r.justificacion,40)+"</td>";
+    html+="<td>"+attachCell(r.attachments)+"</td>";
     html+="</tr>";
   }
   tbody.innerHTML=html;
@@ -359,10 +418,8 @@ function buildEmp(){
   }
   return ROSTER.map(function(e){
     var parts=e.nombre.toLowerCase().split(",").map(function(s){return s.trim();});
-    var apellido=parts[0]||"";
-    var apwords=apellido.split(" ");
-    var matched=null;
-    var mkeys=Object.keys(m);
+    var apellido=parts[0]||"";var apwords=apellido.split(" ");
+    var matched=null;var mkeys=Object.keys(m);
     for(var i=0;i<mkeys.length&&!matched;i++){
       var k=mkeys[i];var kparts=k.split(" ");var klast=kparts[kparts.length-1];
       for(var w=0;w<apwords.length;w++){if(apwords[w].length>2&&klast===apwords[w]){matched=m[k];break;}}
@@ -402,8 +459,8 @@ function renderEmp(){
     var dot="dot-ok",lbl="Activo",bg="";
     if(!r.hasRecord){dot="dot-gray";lbl="Sin reporte";bg="background:#f8fafc";}
     else if(r.total>=5){dot="dot-err";lbl="Alta frecuencia";bg="background:#fff8f8";}
-    else if(r.noshow>0){dot="dot-warn";lbl="Tiene no shows";bg="background:#fffbf0";}
-    var tc=r.total===0?"#94a3b8":r.total>=5?"#e24b4a":r.total>=3?"#f5a623":"#0e9f7e";
+    else if(r.noshow>0){dot="dot-warn";lbl="Tiene no shows";bg="background:#fffdf0";}
+    var tc=r.total===0?"#94a3b8":r.total>=5?"#e24b4a":r.total>=3?"#f59e0b":"#0e9f7e";
     var uid="e"+(start+i);
     html+='<tr style="'+bg+'">';
     html+='<td style="color:#94a3b8;font-size:11px;font-family:monospace">'+r.id+"</td>";
@@ -431,7 +488,7 @@ function renderTop20(){
   for(var i=0;i<top.length;i++){
     var r=top[i];var rank=i+1;
     var rc=rank===1?"rank-1":rank===2?"rank-2":rank===3?"rank-3":"rank-other";
-    var tc=r.total>=8?"#e24b4a":r.total>=5?"#f5a623":"#0e9f7e";
+    var tc=r.total>=8?"#e24b4a":r.total>=5?"#f59e0b":"#0e9f7e";
     html+="<tr>";
     html+='<td style="text-align:center"><span class="rank-num '+rc+'">'+rank+"</span></td>";
     html+='<td style="color:#94a3b8;font-size:11px;font-family:monospace">'+r.id+"</td>";
@@ -456,10 +513,13 @@ function renderMeses(){
   }
   var meses=Object.keys(mesMap).sort();
   var gridHtml="";
+  var selMes=activeChartFilter.field==="mes"?activeChartFilter.value:null;
   for(var i=0;i<meses.length;i++){
     var m=meses[i];var parts=m.split("-");var mn=MESES[parts[1]]||parts[1];
     var pct=Math.round(mesMap[m].total/Math.max(allAus.length,1)*100);
-    gridHtml+='<div class="month-card"><div class="mn">'+mn+" "+parts[0]+'</div><div class="mv">'+mesMap[m].total+'</div><div class="ms">'+pct+"% del total</div></div>";
+    var sel=selMes===m?" selected":"";
+    gridHtml+='<div class="month-card'+sel+'" onclick="applyChartFilter(\'mes\',\''+m+'\')">';
+    gridHtml+='<div class="mn">'+mn+" "+parts[0]+'</div><div class="mv">'+mesMap[m].total+'</div><div class="ms">'+pct+"% del total</div></div>";
   }
   document.getElementById("month-grid").innerHTML=gridHtml;
   var detailHtml="";
@@ -470,7 +530,7 @@ function renderMeses(){
     for(var j=0;j<tkeys.length;j++){tiposHtml+=tipoBadge(tkeys[j])+' <span style="font-size:11px;color:#64748b;margin-right:8px">'+tipos[tkeys[j]]+"</span>";}
     detailHtml+='<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f1f5f9">';
     detailHtml+='<span style="font-size:12px;font-weight:500;color:#1e293b;width:100px;flex-shrink:0">'+mn+"</span>";
-    detailHtml+='<span style="font-size:14px;font-weight:700;color:var(--navy2);width:36px;flex-shrink:0">'+mesMap[m].total+"</span>";
+    detailHtml+='<span style="font-size:14px;font-weight:700;color:#0D1B3E;width:36px;flex-shrink:0">'+mesMap[m].total+"</span>";
     detailHtml+="<div>"+tiposHtml+"</div></div>";
   }
   document.getElementById("month-detail").innerHTML=detailHtml;
@@ -494,39 +554,45 @@ function updateMetrics(){
 function showTab(tab,btn){
   var panels=document.querySelectorAll(".tab-panel");for(var i=0;i<panels.length;i++)panels[i].classList.remove("active");
   var btns=document.querySelectorAll(".tab-btn");for(var i=0;i<btns.length;i++)btns[i].classList.remove("active");
-  document.getElementById("tab-"+tab).classList.add("active");btn.classList.add("active");
+  document.getElementById("tab-"+tab).classList.add("active");
+  if(btn)btn.classList.add("active");
   if(tab==="resumen")renderCharts();
   if(tab==="empleados"&&filteredEmp.length===0)filterEmp();
   if(tab==="top20")renderTop20();
   if(tab==="meses")renderMeses();
 }
 
-function barChart(id,data,colors){
+function barChart(id,data,colors,filterField){
   var max=0;for(var i=0;i<data.length;i++)if(data[i].v>max)max=data[i].v;if(max===0)max=1;
   var html="";var top=data.slice(0,10);
+  var selVal=activeChartFilter.field===filterField?activeChartFilter.value:null;
   for(var i=0;i<top.length;i++){
     var d=top[i];var lbl=d.k.length>14?d.k.slice(0,14)+"...":d.k;
-    html+='<div class="bar-row"><span class="bar-label" title="'+d.k+'">'+lbl+'</span><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(d.v/max*100)+'%;background:'+colors[i%colors.length]+'"></div></div><span class="bar-count">'+d.v+"</span></div>";
+    var sel=selVal===d.k?" selected":"";
+    var displayVal=filterField==="mes"?d.displayK||d.k:d.k;
+    html+='<div class="bar-row'+sel+'" onclick="applyChartFilter(\''+filterField+'\',\''+d.k.replace(/'/g,"\\'")+'\')"><span class="bar-label" title="'+esc(d.k)+'">'+esc(lbl)+'</span><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(d.v/max*100)+'%;background:'+colors[i%colors.length]+'"></div></div><span class="bar-count">'+d.v+"</span></div>";
   }
   document.getElementById(id).innerHTML=html;
 }
 
 function renderCharts(){
-  var tC={},dC={},sC={},mC={};
+  var tC={},dC={},sC={},mC={},mKeys={};
   for(var i=0;i<allAus.length;i++){
     var r=allAus[i];
     tC[r.tipo||"Otro"]=(tC[r.tipo||"Otro"]||0)+1;
     dC[r.departamento||"Sin depto"]=(dC[r.departamento||"Sin depto"]||0)+1;
     sC[r.supervisor||"--"]=(sC[r.supervisor||"--"]||0)+1;
-    var m=r.fecha?r.fecha.slice(0,7):"--";mC[m]=(mC[m]||0)+1;
+    var m=r.fecha?r.fecha.slice(0,7):"--";
+    mC[m]=(mC[m]||0)+1;
+    if(!mKeys[m]){var p=m.split("-");mKeys[m]=(MESES[p[1]]||p[1])||m;}
   }
   function toArr(o){var a=[];for(var k in o)a.push({k:k,v:o[k]});return a.sort(function(a,b){return b.v-a.v;});}
-  barChart("c-tipo",toArr(tC),["#e24b4a","#f5a623","#0e9f7e","#378add","#7f77dd"]);
-  barChart("c-dep",toArr(dC),["#0d1b3e","#1a2d5a","#243d7a","#378add","#85B7EB"]);
-  barChart("c-sup",toArr(sC),BAR_COLORS);
+  barChart("c-tipo",toArr(tC),["#e24b4a","#FFD100","#0E9F7E","#1A56DB","#7F77DD"],"tipo");
+  barChart("c-dep",toArr(dC),["#0D1B3E","#1A2D5A","#1A56DB","#0E9F7E","#7F77DD"],"dep");
+  barChart("c-sup",toArr(sC),WINDMAR_COLORS,"sup");
   var ma=toArr(mC).sort(function(a,b){return a.k.localeCompare(b.k);});
-  for(var i=0;i<ma.length;i++){var p=ma[i].k.split("-");ma[i].k=(MESES[p[1]]||p[1])||ma[i].k;}
-  barChart("c-mes",ma,["#0d1b3e","#1a2d5a","#243d7a","#378add","#85B7EB","#7f77dd"]);
+  for(var i=0;i<ma.length;i++){var p=ma[i].k.split("-");ma[i].displayK=(MESES[p[1]]||p[1])||ma[i].k;ma[i].lbl=ma[i].displayK;}
+  barChart("c-mes",ma,["#0D1B3E","#1A2D5A","#1A56DB","#0E9F7E","#7F77DD","#FFD100"],"mes");
 }
 
 function syncData(){
@@ -539,9 +605,6 @@ function syncData(){
     hideLoader();
   }).catch(function(e){hideLoader();alert("Error: "+e.message);});
 }
-  </script>
-<script src="roster.js"></script>
-<script>
 buildRosterIndex();
 syncData();
 </script>
