@@ -133,7 +133,8 @@ tr:hover td{background:#f8fafc}
           <select id="fil-dep" onchange="filterAus()"><option value="">Depto: Todos</option></select>
           <select id="fil-mes" onchange="filterAus()"><option value="">Mes: Todos</option></select>
           <select id="fil-shr" onchange="filterAus()"><option value="">Status HR: Todos</option><option>Validado</option><option>Pendiente</option><option>Aprobado</option><option>Rechazado</option></select>
-          <button class="btn-export" onclick="exportExcel()">Exportar Excel</button>
+          <span class="count-pill" id="aus-count"></span>
+<button class="btn-export" onclick="exportExcel()">Exportar Excel</button>
           <span id="filter-badge" style="display:none" class="filter-active-badge" onclick="clearChartFilter()">✕ Limpiar filtro</span>
         </div>
         <div class="tbl-wrap">
