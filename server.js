@@ -14,7 +14,7 @@ app.get('/api/ausencias', async (req, res) => {
     const fetch = (await import('node-fetch')).default;
     let allRows = [], pageNum = 1;
     while (true) {
-      const r = await fetch(SS_BASE + '/sheets/' + SHEET_ID + '?pageSize=500&page=' + pageNum, { headers: HEADERS });
+      const r = await fetch(SS_BASE + '/sheets/' + SHEET_ID + '?pageSize=500&page=' + pageNum + '&include=attachments', { headers: HEADERS });
       if (!r.ok) return res.status(r.status).json({ error: await r.text() });
       const data = await r.json();
       const colMap = {};
@@ -25,6 +25,9 @@ app.get('/api/ausencias', async (req, res) => {
           const t = colMap[cell.columnId];
           if (t) obj[t] = cell.displayValue !== undefined ? cell.displayValue : (cell.value !== undefined ? cell.value : '');
         });
+        const attachments = (row.attachments || []).map(function(a) {
+          return { id: a.id, name: a.name, type: a.attachmentType, url: a.url || null, mimeType: a.mimeType || '' };
+        });
         return {
           rowId: obj.rowId,
           empleado: obj['Nombre Empleado'] || '',
@@ -34,7 +37,8 @@ app.get('/api/ausencias', async (req, res) => {
           fecha: obj['Fecha de Inicio'] || obj['Fecha Inicio'] || '',
           statusHR: obj['Status HR'] || '',
           justificacion: obj['Justificacion'] || obj['Justificaci\u00f3n'] || '',
-          comentarios: obj['Comentarios'] || ''
+          comentarios: obj['Comentarios'] || '',
+          attachments: attachments
         };
       });
       allRows = allRows.concat(rows);
@@ -42,6 +46,16 @@ app.get('/api/ausencias', async (req, res) => {
       pageNum++;
     }
     res.json({ rows: allRows });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/attachment/:attachmentId', async (req, res) => {
+  try {
+    const fetch = (await import('node-fetch')).default;
+    const r = await fetch(SS_BASE + '/sheets/' + SHEET_ID + '/attachments/' + req.params.attachmentId, { headers: HEADERS });
+    if (!r.ok) return res.status(r.status).json({ error: await r.text() });
+    const data = await r.json();
+    res.json({ url: data.url, name: data.name });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -64,13 +78,9 @@ app.patch('/api/ausencias/:rowId', async (req, res) => {
 });
 
 const path = require('path');
-app.get('/app.js', function(req, res) {
-  res.sendFile(path.join(__dirname, 'public', 'app.js'));
-});
+app.get('/app.js', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'app.js')); });
 app.use(express.static(path.join(__dirname, 'public')));
-app.get('*', function(req, res) {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+app.get('*', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, function() { console.log('Servidor v2 corriendo en puerto ' + PORT); });
+app.listen(PORT, function() { console.log('Servidor v3 corriendo en puerto ' + PORT); });
