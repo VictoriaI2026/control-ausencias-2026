@@ -90,7 +90,11 @@ tr:hover td{background:#f8fafc}
 .loading-overlay p{color:#fff;font-size:13px}
 .rank-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:11px;font-weight:600}
 .rank-1{background:var(--yellow);color:var(--navy)}.rank-2{background:#94a3b8;color:#fff}.rank-3{background:var(--coral);color:#fff}.rank-other{background:#f1f5f9;color:#64748b}
-.month-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:8px}
+.compare-col{background:#f5f3ff;border-radius:10px;padding:1rem;border:1px solid #ddd6fe}
+.compare-col h3{font-size:13px;font-weight:600;color:#2e1065;margin-bottom:12px}
+.compare-stat{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #ddd6fe;font-size:12px}
+.compare-stat:last-child{border-bottom:none}
+    .month-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:8px}
 .month-card{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);border-radius:10px;padding:.75rem;text-align:center;cursor:pointer;transition:transform .15s}
 .month-card:hover{transform:scale(1.03)}
 .month-card.selected{outline:3px solid var(--yellow)}
@@ -122,6 +126,7 @@ tr:hover td{background:#f8fafc}
       <button class="tab-btn" onclick="showTab('empleados',this)">Por empleado</button>
       <button class="tab-btn" onclick="showTab('top20',this)">Top 20</button>
       <button class="tab-btn" onclick="showTab('meses',this)">Por mes</button>
+     <button class="tab-btn" onclick="showTab('comparar',this)">Comparar meses</button>
       <button class="tab-btn" onclick="showTab('resumen',this)">Resumen visual</button>
     </div>
 
@@ -198,7 +203,19 @@ tr:hover td{background:#f8fafc}
         </div>
       </div>
     </div>
-
+<div id="tab-comparar" class="tab-panel">
+  <div class="section-card">
+    <div class="filters" style="margin-bottom:1rem">
+      <label style="font-size:12px;color:#4c1d95;font-weight:500">Mes 1:</label>
+      <select id="comp-mes1" onchange="renderComparar()"><option value="">Selecciona</option></select>
+      <label style="font-size:12px;color:#4c1d95;font-weight:500">Mes 2:</label>
+      <select id="comp-mes2" onchange="renderComparar()"><option value="">Selecciona</option></select>
+    </div>
+    <div id="compare-content" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="text-align:center;color:#94a3b8;font-size:13px;grid-column:span 2;padding:2rem">Selecciona dos meses para comparar</div>
+    </div>
+  </div>
+</div>
     <div id="tab-resumen" class="tab-panel">
       <div class="chart-row">
         <div class="chart-card"><h3>Tipo de ausencia</h3><p class="chart-hint">Haz clic para filtrar</p><div id="c-tipo"></div></div>
@@ -338,6 +355,9 @@ function buildFilters(){
   document.getElementById("fil-dep").innerHTML='<option value="">Depto: Todos</option>'+deps.map(function(d){return"<option>"+d+"</option>";}).join("");
   document.getElementById("fil-sup").innerHTML='<option value="">Supervisor: Todos</option>'+sups.map(function(s){return"<option>"+s+"</option>";}).join("");
   document.getElementById("fil-mes").innerHTML='<option value="">Mes: Todos</option>'+meses.map(function(m){return"<option>"+m+"</option>";}).join("");
+  var mOpts='<option value="">Selecciona</option>'+meses.map(function(m){var p=m.split("-");return'<option value="'+m+'">'+(MESES[p[1]]||p[1])+" "+p[0]+"</option>";}).join("");
+document.getElementById("comp-mes1").innerHTML=mOpts;
+document.getElementById("comp-mes2").innerHTML=mOpts;
 }
 
 function applyChartFilter(field,value){
@@ -564,6 +584,7 @@ function showTab(tab,btn){
   if(tab==="empleados"&&filteredEmp.length===0)filterEmp();
   if(tab==="top20")renderTop20();
   if(tab==="meses")renderMeses();
+  if(tab==="comparar")renderComparar();
 }
 
 function barChart(id,data,colors,filterField){
@@ -598,7 +619,33 @@ function renderCharts(){
   for(var i=0;i<ma.length;i++){var p=ma[i].k.split("-");ma[i].displayK=(MESES[p[1]]||p[1])||ma[i].k;ma[i].lbl=ma[i].displayK;}
   barChart("c-mes",ma,["#0D1B3E","#1A2D5A","#1A56DB","#0E9F7E","#7F77DD","#FFD100"],"mes");
 }
-
+function renderComparar(){
+  var m1=document.getElementById("comp-mes1").value;
+  var m2=document.getElementById("comp-mes2").value;
+  if(!m1||!m2){document.getElementById("compare-content").innerHTML='<div style="text-align:center;color:#94a3b8;font-size:13px;grid-column:span 2;padding:2rem">Selecciona dos meses para comparar</div>';return;}
+  function mesStats(m){
+    var st={total:0,noshow:0,enf:0,vac:0,per:0,emps:{}};
+    for(var i=0;i<allAus.length;i++){
+      var r=allAus[i];if(!r.fecha||r.fecha.slice(0,7)!==m)continue;
+      st.total++;var t=(r.tipo||"").toLowerCase();
+      if(t.indexOf("no show")>=0)st.noshow++;
+      else if(t.indexOf("enfer")>=0)st.enf++;
+      else if(t.indexOf("vacac")>=0)st.vac++;
+      else if(t.indexOf("person")>=0)st.per++;
+      st.emps[(r.empleado||"").toLowerCase().trim()]=1;
+    }
+    st.empCount=Object.keys(st.emps).length;return st;
+  }
+  var s1=mesStats(m1),s2=mesStats(m2);
+  var p1=m1.split("-"),p2=m2.split("-");
+  var mn1=(MESES[p1[1]]||p1[1])+" "+p1[0];
+  var mn2=(MESES[p2[1]]||p2[1])+" "+p2[0];
+  function diff(v1,v2){return v1>v2?'<span style="color:#7c3aed;font-weight:600">&#8593;'+v1+"</span>":'<span style="color:#0e9f7e;font-weight:600">&#8595;'+v1+"</span>";}
+  function row(lbl,v1,v2){return'<div class="compare-stat"><span>'+lbl+'</span><span>'+diff(v1,v2)+'</span></div>';}
+  var html='<div class="compare-col"><h3>'+mn1+'</h3>'+row("Total ausencias",s1.total,s2.total)+row("No shows",s1.noshow,s2.noshow)+row("Enfermedad",s1.enf,s2.enf)+row("Vacaciones",s1.vac,s2.vac)+row("Personal",s1.per,s2.per)+row("Empleados afectados",s1.empCount,s2.empCount)+"</div>";
+  html+='<div class="compare-col"><h3>'+mn2+'</h3>'+row("Total ausencias",s2.total,s1.total)+row("No shows",s2.noshow,s1.noshow)+row("Enfermedad",s2.enf,s1.enf)+row("Vacaciones",s2.vac,s1.vac)+row("Personal",s2.per,s1.per)+row("Empleados afectados",s2.empCount,s1.empCount)+"</div>";
+  document.getElementById("compare-content").innerHTML=html;
+}
 function syncData(){
   showLoader("Sincronizando con Smartsheet...");
   fetch("/api/ausencias").then(function(r){if(!r.ok)throw new Error("Error "+r.status);return r.json();})
