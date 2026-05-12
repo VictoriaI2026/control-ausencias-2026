@@ -7,14 +7,15 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --navy:#0D1B3E;--navy2:#1A2D5A;--royal:#1A56DB;--teal:#0E9F7E;
-  --yellow:#FFD100;--violet:#7F77DD;--coral:#d85a30;--gray-bg:#f0f2f7
+:root{
+  --navy:#2e1065;--navy2:#4c1d95;--royal:#7c3aed;--teal:#8b5cf6;
+  --yellow:#a78bfa;--violet:#c4b5fd;--coral:#7c3aed;--gray-bg:#f5f3ff
 }
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--gray-bg);color:#1e293b;font-size:14px;min-height:100vh}
 #app{display:flex;flex-direction:column;min-height:100vh}
 header{background:var(--navy);padding:.85rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 header h1{font-size:15px;font-weight:500;color:#fff;display:flex;align-items:center;gap:8px}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block}
+.dot{width:8px;height:8px;border-radius:50%;background:#a78bfa;display:inline-block}
 .header-right{display:flex;align-items:center;gap:10px}
 .sync-info{font-size:11px;color:rgba(255,255,255,.5)}
 .btn-sync{font-size:11px;padding:5px 13px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:7px;color:#fff;cursor:pointer}
@@ -22,7 +23,8 @@ main{padding:1.25rem;flex:1}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.25rem}
 @media(max-width:700px){.metrics{grid-template-columns:repeat(2,1fr)}}
 .m-card{border-radius:12px;padding:.9rem 1.1rem;position:relative;overflow:hidden}
-.m-card.c1{background:var(--navy2)}.m-card.c2{background:var(--teal)}.m-card.c3{background:#c0392b}.m-card.c4{background:var(--yellow)}
+.m-card.c1{background:#2e1065}.m-card.c2{background:#4c1d95}.m-card.c3{background:#7c3aed}.m-card.c4{background:#a78bfa}
+.m-card.c4 .lbl,.m-card.c4 .val,.m-card.c4 .sub{color:#2e1065}
 .m-card.c4 .lbl,.m-card.c4 .val,.m-card.c4 .sub{color:var(--navy)}
 .m-card .lbl{font-size:10px;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
 .m-card .val{font-size:26px;font-weight:600;color:#fff}
