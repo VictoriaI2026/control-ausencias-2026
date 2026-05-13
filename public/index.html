@@ -615,7 +615,7 @@ function updateMetrics(){
   document.getElementById("m-total").textContent=total;
   document.getElementById("m-reg").textContent=cr;
   document.getElementById("m-reg-pct").textContent=Math.round(cr/total*100)+"% de la plantilla";
-  document.getElementById("m-ns").textContent=ns;
+  document.getElementById("m-ns").childNodes[0].textContent=ns;
   document.getElementById("m-ns-pct").textContent=Math.round(ns/Math.max(allAus.length,1)*100)+"% del total";
   var meses2=[];var mmap2={};
 for(var i=0;i<allAus.length;i++){var m2=allAus[i].fecha?allAus[i].fecha.slice(0,7):null;if(m2&&!mmap2[m2]){mmap2[m2]=1;meses2.push(m2);}}
