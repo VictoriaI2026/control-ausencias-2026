@@ -404,7 +404,11 @@ function buildFilters(){
   var mOpts='<option value="">Selecciona</option>'+meses.map(function(m){var p=m.split("-");return'<option value="'+m+'">'+(MESES[p[1]]||p[1])+" "+p[0]+"</option>";}).join("");
   document.getElementById("comp-mes1").innerHTML=mOpts;document.getElementById("comp-mes2").innerHTML=mOpts;
   document.getElementById("cal-mes").innerHTML='<option value="">Mes: Selecciona</option>'+meses.map(function(m){var p=m.split("-");return'<option value="'+m+'">'+(MESES[p[1]]||p[1])+" "+p[0]+"</option>";}).join("");
-  document.getElementById("bono-mes").innerHTML=
+  var bonoOpts='<option value="">Mes: Selecciona</option>'+meses.map(function(m){var p=m.split("-");return'<option value="'+m+'">'+(MESES[p[1]]||p[1])+" "+p[0]+"</option>";}).join("");
+  document.getElementById("bono-mes").innerHTML=bonoOpts;
+  document.getElementById("brig-mes").innerHTML='<option value="">Mes: Todos</option>'+meses.map(function(m){var p=m.split("-");return'<option value="'+m+'">'+(MESES[p[1]]||p[1])+" "+p[0]+"</option>";}).join("");
+  document.getElementById("comp-mes1").innerHTML=mOpts;
+  document.getElementById("comp-mes2").innerHTML=mOpts;
     document.getElementById("brig-mes").innerHTML='<option value="">Mes: Todos</option>'+meses.map(function(m){var p=m.split("-");return'<option value="'+m+'">'+(MESES[p[1]]||p[1])+" "+p[0]+"</option>";}).join("");
 }
 function applyChartFilter(field,value){
