@@ -28,8 +28,11 @@ main{padding:1.25rem;flex:1;background:#ede9fe}
 .m-card.c4 .lbl,.m-card.c4 .val,.m-card.c4 .sub{color:#2e1065}
 .m-card .lbl{font-size:10px;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
 .m-card .val{font-size:26px;font-weight:600;color:#fff}
+    .trend-up{font-size:12px;color:#fca5a5;font-weight:600;margin-left:6px}
+.trend-down{font-size:12px;color:#86efac;font-weight:600;margin-left:6px}
 .m-card .sub{font-size:10px;color:rgba(255,255,255,.7);margin-top:3px}
 .m-card .deco{position:absolute;right:-12px;top:-12px;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.08)}
+    .alert-red{background:#fee2e2;border-left:3px solid #dc2626;border-radius:8px;padding:.5rem 1rem;margin-bottom:.4rem;font-size:12px;color:#991b1b}
 .alert-box{background:#fff8d6;border-left:3px solid var(--yellow);border-radius:8px;padding:.7rem 1rem;margin-bottom:1rem;font-size:12px;color:#7a5200}
 .tabs{display:flex;gap:4px;background:#fff;border-radius:10px;padding:4px;border:1px solid #ddd6fe;margin-bottom:1rem;flex-wrap:wrap;overflow-x:auto}
 .tab-btn{font-size:12px;padding:7px 12px;cursor:pointer;background:transparent;border:none;border-radius:7px;color:#64748b;white-space:nowrap}
@@ -129,10 +132,11 @@ tr:hover td{background:#f8fafc}
     <div class="metrics">
       <div class="m-card c1"><div class="deco"></div><div class="lbl">Empleados de campo</div><div class="val" id="m-total">--</div><div class="sub">En roster activo</div></div>
       <div class="m-card c2"><div class="deco"></div><div class="lbl">Con ausencia registrada</div><div class="val" id="m-reg">--</div><div class="sub" id="m-reg-pct">--</div></div>
-      <div class="m-card c3"><div class="deco"></div><div class="lbl">No shows</div><div class="val" id="m-ns">--</div><div class="sub" id="m-ns-pct">del total</div></div>
-     <div class="m-card c4"><div class="deco"></div><div class="lbl">Total ausencias</div><div class="val" id="m-noreg">--</div><div class="sub">Registradas en 2026</div></div>
+     <div class="m-card c3"><div class="deco"></div><div class="lbl">No shows</div><div class="val" id="m-ns">--<span id="m-ns-trend"></span></div><div class="sub" id="m-ns-pct">del total</div></div>
+    <div class="m-card c4"><div class="deco"></div><div class="lbl">Total ausencias</div><div class="val" id="m-noreg">--<span id="m-noreg-trend"></span></div><div class="sub" id="m-noreg-sub">Registradas en 2026</div></div>
     </div>
     <div id="alert-zone"></div>
+    <div id="alertas-zone"></div>
     <div class="tabs">
       <button class="tab-btn active" onclick="showTab('ausencias',this)">Ausencias</button>
       <button class="tab-btn" onclick="showTab('empleados',this)">Por empleado</button>
@@ -613,7 +617,23 @@ function updateMetrics(){
   document.getElementById("m-reg-pct").textContent=Math.round(cr/total*100)+"% de la plantilla";
   document.getElementById("m-ns").textContent=ns;
   document.getElementById("m-ns-pct").textContent=Math.round(ns/Math.max(allAus.length,1)*100)+"% del total";
-  document.getElementById("m-noreg").textContent=allAus.length.toLocaleString();
+  var meses2=[];var mmap2={};
+for(var i=0;i<allAus.length;i++){var m2=allAus[i].fecha?allAus[i].fecha.slice(0,7):null;if(m2&&!mmap2[m2]){mmap2[m2]=1;meses2.push(m2);}}
+meses2.sort();
+var currMes=meses2.length>0?meses2[meses2.length-1]:null;
+var prevMes=meses2.length>1?meses2[meses2.length-2]:null;
+var currTotal=0,prevTotal=0,currNS=0,prevNS=0;
+for(var i=0;i<allAus.length;i++){
+  var m2=allAus[i].fecha?allAus[i].fecha.slice(0,7):null;
+  var isNS=(allAus[i].tipo||"").toLowerCase().indexOf("no show")>=0;
+  if(m2===currMes){currTotal++;if(isNS)currNS++;}
+  if(m2===prevMes){prevTotal++;if(isNS)prevNS++;}
+}
+document.getElementById("m-noreg").childNodes[0].textContent=allAus.length.toLocaleString();
+var trendEl=document.getElementById("m-noreg-trend");
+if(prevMes&&currTotal!==prevTotal){var diff=currTotal-prevTotal;trendEl.className=diff>0?"trend-up":"trend-down";trendEl.textContent=(diff>0?"↑":"↓")+Math.abs(diff);}
+var trendNS=document.getElementById("m-ns-trend");
+if(prevMes&&currNS!==prevNS){var diffNS=currNS-prevNS;trendNS.className=diffNS>0?"trend-up":"trend-down";trendNS.textContent=(diffNS>0?"↑":"↓")+Math.abs(diffNS);}
   document.getElementById("alert-zone").innerHTML=sr>0?'<div class="alert-box"><strong>'+sr+" empleados de campo</strong> sin ausencia registrada en 2026.</div>":"";
 }
 
@@ -796,13 +816,39 @@ function renderComparar(){
   html+='<div class="compare-col"><h3>'+mn2+'</h3>'+row("Total ausencias",s2.total,s1.total)+row("No shows",s2.noshow,s1.noshow)+row("Enfermedad",s2.enf,s1.enf)+row("Vacaciones",s2.vac,s1.vac)+row("Personal",s2.per,s1.per)+row("Empleados afectados",s2.empCount,s1.empCount)+"</div>";
   document.getElementById("compare-content").innerHTML=html;
 }
+  function detectAlertas(){
+  var empMes={};
+  for(var i=0;i<allAus.length;i++){
+    var r=allAus[i];var k=(r.empleado||"").toLowerCase().trim();
+    var m=r.fecha?r.fecha.slice(0,7):null;if(!k||!m)continue;
+    var key=k+"||"+m;
+    if(!empMes[key])empMes[key]={emp:r.empleado,mes:m,total:0,diasSem:{}};
+    empMes[key].total++;
+    if(r.fecha){var d=new Date(r.fecha+"T12:00:00");var dow=d.getDay();empMes[key].diasSem[dow]=(empMes[key].diasSem[dow]||0)+1;}
+  }
+  var DIAS=["domingo","lunes","martes","miercoles","jueves","viernes","sabado"];
+  var alertas=[];
+  for(var key in empMes){
+    var e=empMes[key];var p=e.mes.split("-");var mn=(MESES[p[1]]||p[1])+" "+p[0];
+    if(e.total>=3)alertas.push({emp:e.emp,msg:"3+ ausencias en "+mn});
+    for(var dow in e.diasSem){if(e.diasSem[dow]>=2)alertas.push({emp:e.emp,msg:"Ausente repetidamente los "+DIAS[dow]+" ("+mn+")"});}
+  }
+  alertas.sort(function(a,b){return a.emp.localeCompare(b.emp);});
+  var html="";
+  var shown=Math.min(alertas.length,8);
+  for(var i=0;i<shown;i++){
+    html+='<div class="alert-red">&#9888; <strong>'+esc(getEmpNombre(alertas[i].emp))+"</strong> — "+alertas[i].msg+"</div>";
+  }
+  if(alertas.length>8)html+='<div class="alert-red">... y '+(alertas.length-8)+" alertas más</div>";
+  document.getElementById("alertas-zone").innerHTML=html;
+}
 function syncData(){
   showLoader("Sincronizando con Smartsheet...");
   fetch("/api/ausencias").then(function(r){if(!r.ok)throw new Error("Error "+r.status);return r.json();})
   .then(function(data){
     allAus=data.rows||[];filteredAus=allAus.slice();
     buildRosterIndex();buildFilters();updateMetrics();renderAus();
-    document.getElementById("sync-info").textContent="Sync: "+new Date().toLocaleTimeString("es-PR")+" - "+allAus.length+" registros";
+    detectAlertas();document.getElementById("sync-info").textContent="Sync: "+new Date().toLocaleTimeString("es-PR")+" - "+allAus.length+" registros";
     hideLoader();
   }).catch(function(e){hideLoader();alert("Error: "+e.message);});
 }
