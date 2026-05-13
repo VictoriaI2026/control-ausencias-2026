@@ -563,8 +563,8 @@ function renderComparar(){
   function row(lbl,v1,v2,inv){
     return '<div class="compare-stat"><span style="color:#64748b">'+lbl+'</span><div style="display:flex;gap:16px"><span style="min-width:60px;text-align:right">'+arr(v1,v2,inv)+'</span><span style="min-width:60px;text-align:right">'+arr(v2,v1,inv)+'</span></div></div>';
   }
-  function rowPlain(lbl,v1,v2){
-    return '<div class="compare-stat"><span style="color:#64748b">'+lbl+'</span><div style="display:flex;gap:16px"><span style="min-width:60px;text-align:right;font-size:11px;color:#2e1065;font-weight:600">'+esc(v1)+'</span><span style="min-width:60px;text-align:right;font-size:11px;color:#2e1065;font-weight:600">'+esc(v2)+'</span></div></div>';
+ function rowPlain(lbl,v1,v2){
+    return '<div class="compare-stat"><span style="color:#64748b">'+lbl+'</span><div style="display:flex;gap:16px"><span style="min-width:60px;text-align:right;font-size:11px;color:#2e1065;font-weight:600">'+esc(String(v1))+'</span><span style="min-width:60px;text-align:right;font-size:11px;color:#2e1065;font-weight:600">'+esc(String(v2))+'</span></div></div>';
   }
   var diffTotal=s1.total-s2.total;var diffPct=s2.total>0?Math.round((s1.total-s2.total)/s2.total*100):0;
   var diffColor=diffTotal>0?"#e24b4a":diffTotal<0?"#0e9f7e":"#94a3b8";
