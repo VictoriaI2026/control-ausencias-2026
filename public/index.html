@@ -638,10 +638,23 @@ function detectAlertas(){
   todasAlertasList.sort(function(a,b){return a.emp.localeCompare(b.emp);});
   alertasVisible=8;renderAlertas();
 }
+  var alertasNotificadas={};
+function notificarAlerta(emp,msg,supervisor){
+  var key=emp+"||"+msg;
+  if(alertasNotificadas[key])return;
+  fetch("/api/notificar",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({empleado:getEmpNombre(emp),ausencias:msg,supervisor:supervisor||"--",mes:msg})})
+  .then(function(r){return r.json();})
+  .then(function(d){if(d.ok){alertasNotificadas[key]=true;alert("Email enviado a v.rivera@windmarhome.com");}else{alert("Error al enviar email: "+(d.error||""));}})
+  .catch(function(){alert("Error de conexion al enviar email.");});
+}
 function renderAlertas(){
   var shown=Math.min(alertasVisible,todasAlertasList.length);
   var html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;font-weight:600;color:#991b1b">'+todasAlertasList.length+' alertas activas</span><button onclick="limpiarAlertas()" style="font-size:11px;padding:3px 10px;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;color:#991b1b;cursor:pointer">Limpiar todas</button></div>';
-  for(var i=0;i<shown;i++){html+='<div class="alert-red" style="display:flex;justify-content:space-between;align-items:center"><span>&#9888; <strong>'+esc(getEmpNombre(todasAlertasList[i].emp))+'</strong> - '+todasAlertasList[i].msg+'</span><button onclick="quitarAlerta('+i+')" style="background:none;border:none;color:#991b1b;cursor:pointer;font-size:14px;padding:0 4px">&#10005;</button></div>';}
+  for(var i=0;i<shown;i++){
+  var sup="";for(var j=0;j<ROSTER.length;j++){if(ROSTER[j].nombre.toLowerCase()===todasAlertasList[i].emp.toLowerCase()){sup=ROSTER[j].supervisor;break;}}
+  html+='<div class="alert-red" style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span>&#9888; <strong>'+esc(getEmpNombre(todasAlertasList[i].emp))+'</strong> - '+todasAlertasList[i].msg+'</span><div style="display:flex;gap:4px;flex-shrink:0"><button onclick="notificarAlerta(\''+todasAlertasList[i].emp.replace(/'/g,"\\'")+'\',\''+todasAlertasList[i].msg.replace(/'/g,"\\'")+'\',\''+sup.replace(/'/g,"\\'")+'\' )" style="font-size:10px;padding:2px 7px;background:#fee2e2;border:1px solid #fca5a5;border-radius:5px;color:#991b1b;cursor:pointer">&#9993;</button><button onclick="quitarAlerta('+i+')" style="background:none;border:none;color:#991b1b;cursor:pointer;font-size:14px;padding:0 4px">&#10005;</button></div></div>';
+}
+  List[i].msg+'</span><button onclick="quitarAlerta('+i+')" style="background:none;border:none;color:#991b1b;cursor:pointer;font-size:14px;padding:0 4px">&#10005;</button></div>';}
   if(todasAlertasList.length>shown){html+='<button onclick="verTodasAlertas()" style="font-size:11px;padding:4px 12px;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;color:#991b1b;cursor:pointer;margin-top:4px">Ver todas ('+todasAlertasList.length+')</button>';}
   else if(todasAlertasList.length>8){html+='<button onclick="alertasVisible=8;renderAlertas()" style="font-size:11px;padding:4px 12px;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;color:#991b1b;cursor:pointer;margin-top:4px">Mostrar menos</button>';}
   document.getElementById("alertas-zone").innerHTML=html;
