@@ -280,69 +280,49 @@ var todasAlertasList=[];
 function buildRosterIndex(){
   rosterByApellido={};
   for(var i=0;i<ROSTER.length;i++){
-    var r=ROSTER[i];
-    var parts=r.nombre.split(",");
+    var r=ROSTER[i];var parts=r.nombre.split(",");
     if(parts.length>=2){
-      var apellido=parts[0].trim().toLowerCase();
-      var words=apellido.split(" ");
+      var apellido=parts[0].trim().toLowerCase();var words=apellido.split(" ");
       if(!rosterByApellido[apellido])rosterByApellido[apellido]=r;
       for(var w=0;w<words.length;w++){if(words[w].length>2&&!rosterByApellido[words[w]])rosterByApellido[words[w]]=r;}
     }
   }
 }
-
 function findEmployee(ssName){
-  if(!ssName)return null;
-  var parts=ssName.trim().split(" ");
-  if(parts.length<2)return null;
-  var last=parts[parts.length-1].toLowerCase();
-  if(rosterByApellido[last])return rosterByApellido[last];
-  if(parts.length>=3){
-    var last2=(parts[parts.length-2]+" "+parts[parts.length-1]).toLowerCase();
-    if(rosterByApellido[last2])return rosterByApellido[last2];
-  }
+  if(!ssName)return null;var parts=ssName.trim().split(" ");if(parts.length<2)return null;
+  var last=parts[parts.length-1].toLowerCase();if(rosterByApellido[last])return rosterByApellido[last];
+  if(parts.length>=3){var last2=(parts[parts.length-2]+" "+parts[parts.length-1]).toLowerCase();if(rosterByApellido[last2])return rosterByApellido[last2];}
   return null;
 }
-
 function getEmpId(n){var e=findEmployee(n);return e?e.id:"";}
 function getEmpNombre(n){var e=findEmployee(n);return e?e.nombre:invertirNombre(n);}
-
 function invertirNombre(n){
-  if(!n)return n;
-  var p=n.trim().split(" ");
-  if(p.length<=1)return n;
+  if(!n)return n;var p=n.trim().split(" ");if(p.length<=1)return n;
   if(p.length===2)return p[1]+", "+p[0];
   if(p[1].length<=2&&(p[1].indexOf(".")>=0||p[1].length===1))return p.slice(2).join(" ")+", "+p[0]+" "+p[1];
   return p.slice(1).join(" ")+", "+p[0];
 }
-
 function showLoader(m){document.getElementById("loader-msg").textContent=m||"Cargando...";document.getElementById("loader").classList.add("show");}
 function hideLoader(){document.getElementById("loader").classList.remove("show");}
 function esc(s){return (s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");}
 function tr2(s,n){return s&&s.length>n?s.slice(0,n)+"...":(s||"--");}
 function tipoBadge(t){var k=null;var keys=Object.keys(TIPOS);for(var i=0;i<keys.length;i++){if(t&&t.toLowerCase().indexOf(keys[i].toLowerCase())>=0){k=keys[i];break;}}return '<span class="badge '+(k?TIPOS[k]:"b-otro")+'">'+esc(t||"--")+"</span>";}
 function flashEl(el,cls,msg){if(!el)return;el.className="flash"+(cls?" "+cls:"");el.textContent=msg;if(cls==="ok")setTimeout(function(){el.textContent="";},3000);}
-
-function openAttachment(id){
-  fetch("/api/attachment/"+id).then(function(r){return r.json();}).then(function(d){if(d.url)window.open(d.url,"_blank");else alert("No se pudo obtener el link.");}).catch(function(){alert("Error al obtener el adjunto.");});
-}
+function openAttachment(id){fetch("/api/attachment/"+id).then(function(r){return r.json();}).then(function(d){if(d.url)window.open(d.url,"_blank");else alert("No se pudo obtener el link.");}).catch(function(){alert("Error.");});}
 function attachCell(att){
   if(!att||att.length===0)return '<span style="color:#94a3b8;font-size:11px">--</span>';
   var html='<div class="attach-list">';
   for(var i=0;i<att.length;i++){html+='<button class="attach-btn" onclick="openAttachment(\''+att[i].id+'\')">&#128206; '+esc(tr2(att[i].name,16))+"</button>";}
   return html+"</div>";
 }
-
 function ssCell(rowId,field,value,btn,fl){
-  if(!rowId){flashEl(fl,"err","Sin ID");return;}
-  if(btn){btn.disabled=true;btn.textContent="...";}
+  if(!rowId){flashEl(fl,"err","Sin ID");return;}if(btn){btn.disabled=true;btn.textContent="...";}
   fetch("/api/ausencias/"+rowId,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({field:field,value:value})})
   .then(function(r){return r.json();}).then(function(d){
     if(d.ok){flashEl(fl,"ok",field==="statusHR"?"Actualizado":"Guardado");if(btn){btn.textContent="Guardado";setTimeout(function(){btn.textContent="Guardar";btn.disabled=false;},2500);}}
     else{flashEl(fl,"err","Error");if(btn){btn.textContent="Guardar";btn.disabled=false;}}
   }).catch(function(){flashEl(fl,"err","Error");if(btn){btn.textContent="Guardar";btn.disabled=false;}});
 }
-
 function hrSelect(rowId,cur,uid){
   var opts='<option value="">-- seleccionar --</option>';
   for(var i=0;i<HR_OPTIONS.length;i++){opts+="<option"+(HR_OPTIONS[i]===cur?" selected":"")+">"+HR_OPTIONS[i]+"</option>";}
@@ -363,7 +343,6 @@ function saveCmt(rowId,uid,btn){
   if(ex){ex.textContent=tr2(v,80);}else{var d=document.createElement("div");d.className="comment-existing";d.textContent=tr2(v,80);cell.insertBefore(d,cell.firstChild);}
   for(var i=0;i<allAus.length;i++){if(String(allAus[i].rowId)===String(rowId)){allAus[i].comentarios=v;break;}}
 }
-
 function buildFilters(){
   var deps=[],sups=[],meses=[],dmap={},smap={},mmap={};
   for(var i=0;i<allAus.length;i++){
@@ -377,21 +356,15 @@ function buildFilters(){
   document.getElementById("fil-sup").innerHTML='<option value="">Supervisor: Todos</option>'+sups.map(function(s){return"<option>"+s+"</option>";}).join("");
   document.getElementById("fil-mes").innerHTML='<option value="">Mes: Todos</option>'+meses.map(function(m){return"<option>"+m+"</option>";}).join("");
   var mOpts='<option value="">Selecciona</option>'+meses.map(function(m){var p=m.split("-");return'<option value="'+m+'">'+(MESES[p[1]]||p[1])+" "+p[0]+"</option>";}).join("");
-  document.getElementById("comp-mes1").innerHTML=mOpts;
-  document.getElementById("comp-mes2").innerHTML=mOpts;
+  document.getElementById("comp-mes1").innerHTML=mOpts;document.getElementById("comp-mes2").innerHTML=mOpts;
   document.getElementById("cal-mes").innerHTML='<option value="">Mes: Selecciona</option>'+meses.map(function(m){var p=m.split("-");return'<option value="'+m+'">'+(MESES[p[1]]||p[1])+" "+p[0]+"</option>";}).join("");
   document.getElementById("bono-mes").innerHTML='<option value="">Mes: Selecciona</option>'+meses.map(function(m){var p=m.split("-");return'<option value="'+m+'">'+(MESES[p[1]]||p[1])+" "+p[0]+"</option>";}).join("");
 }
-
 function applyChartFilter(field,value){
-  activeChartFilter={field:field,value:value};
-  var badge=document.getElementById("filter-badge");badge.style.display="inline-block";badge.textContent="&#10005; "+value;
+  activeChartFilter={field:field,value:value};var badge=document.getElementById("filter-badge");badge.style.display="inline-block";badge.textContent="&#10005; "+value;
   filterAus();showTab("ausencias",document.querySelector(".tab-btn"));
 }
-function clearChartFilter(){
-  activeChartFilter={field:null,value:null};document.getElementById("filter-badge").style.display="none";filterAus();renderCharts();
-}
-
+function clearChartFilter(){activeChartFilter={field:null,value:null};document.getElementById("filter-badge").style.display="none";filterAus();renderCharts();}
 function filterAus(){
   var q=document.getElementById("srch-aus").value.toLowerCase();
   var tip=document.getElementById("fil-tipo").value,dep=document.getElementById("fil-dep").value;
@@ -408,15 +381,13 @@ function filterAus(){
   });
   ausPage=0;renderAus();
 }
-
 function renderAus(){
   var tbody=document.getElementById("aus-tbody");var start=ausPage*PAGE;var slice=filteredAus.slice(start,start+PAGE);
   document.getElementById("aus-count").textContent=filteredAus.length+" registros";
   if(!slice.length){tbody.innerHTML='<tr><td colspan="11" style="text-align:center;padding:2rem;color:#94a3b8">No hay registros</td></tr>';return;}
   var html="";
   for(var i=0;i<slice.length;i++){
-    var r=slice[i];var uid="a"+(start+i);
-    var bg=(r.tipo||"").toLowerCase().indexOf("no show")>=0?"background:#fff1f2":"";
+    var r=slice[i];var uid="a"+(start+i);var bg=(r.tipo||"").toLowerCase().indexOf("no show")>=0?"background:#fff1f2":"";
     var empId=getEmpId(r.empleado);var nomDisp=getEmpNombre(r.empleado);
     html+='<tr style="'+bg+'"><td style="color:#94a3b8;font-size:11px">'+(start+i+1)+'</td>';
     html+='<td style="color:#94a3b8;font-size:11px;font-family:monospace">'+(empId||"--")+'</td>';
@@ -432,41 +403,30 @@ function renderAus(){
   }
   tbody.innerHTML=html;
   document.getElementById("aus-pinfo").textContent="Pag "+(ausPage+1)+" de "+(Math.ceil(filteredAus.length/PAGE)||1);
-  document.getElementById("aus-prev").disabled=ausPage===0;
-  document.getElementById("aus-next").disabled=start+PAGE>=filteredAus.length;
+  document.getElementById("aus-prev").disabled=ausPage===0;document.getElementById("aus-next").disabled=start+PAGE>=filteredAus.length;
 }
-
 function buildEmp(){
   var m={};
   for(var i=0;i<allAus.length;i++){
     var r=allAus[i];var k=(r.empleado||"").toLowerCase().trim();if(!k)continue;
     if(!m[k])m[k]={nombre:r.empleado,supervisor:r.supervisor,departamento:r.departamento,total:0,noshow:0,comentarios:"",rowId:r.rowId||"",ultimoTipo:r.tipo};
     m[k].total++;if((r.tipo||"").toLowerCase().indexOf("no show")>=0)m[k].noshow++;
-    if(r.comentarios&&!m[k].comentarios)m[k].comentarios=r.comentarios;
-    if(r.rowId&&!m[k].rowId)m[k].rowId=r.rowId;m[k].ultimoTipo=r.tipo;
+    if(r.comentarios&&!m[k].comentarios)m[k].comentarios=r.comentarios;if(r.rowId&&!m[k].rowId)m[k].rowId=r.rowId;m[k].ultimoTipo=r.tipo;
   }
   return ROSTER.map(function(e){
-    var parts=e.nombre.toLowerCase().split(",").map(function(s){return s.trim();});
-    var apellido=parts[0]||"";var apwords=apellido.split(" ");var matched=null;var mkeys=Object.keys(m);
+    var parts=e.nombre.toLowerCase().split(",").map(function(s){return s.trim();});var apellido=parts[0]||"";var apwords=apellido.split(" ");var matched=null;var mkeys=Object.keys(m);
     for(var i=0;i<mkeys.length&&!matched;i++){var k=mkeys[i];var kparts=k.split(" ");var klast=kparts[kparts.length-1];for(var w=0;w<apwords.length;w++){if(apwords[w].length>2&&klast===apwords[w]){matched=m[k];break;}}}
-    return{id:e.id,nombre:e.nombre,posicion:e.posicion,supervisor:matched?matched.supervisor:e.supervisor,
-      departamento:matched?matched.departamento:"",total:matched?matched.total:0,noshow:matched?matched.noshow:0,
-      hasRecord:!!matched,comentarios:matched?matched.comentarios:"",rowId:matched?matched.rowId:"",ultimoTipo:matched?matched.ultimoTipo:""};
+    return{id:e.id,nombre:e.nombre,posicion:e.posicion,supervisor:matched?matched.supervisor:e.supervisor,departamento:matched?matched.departamento:"",total:matched?matched.total:0,noshow:matched?matched.noshow:0,hasRecord:!!matched,comentarios:matched?matched.comentarios:"",rowId:matched?matched.rowId:"",ultimoTipo:matched?matched.ultimoTipo:""};
   });
 }
-
 function filterEmp(){
-  var q=document.getElementById("srch-emp").value.toLowerCase();
-  var sup=document.getElementById("fil-sup").value,show=document.getElementById("fil-show").value;
+  var q=document.getElementById("srch-emp").value.toLowerCase();var sup=document.getElementById("fil-sup").value,show=document.getElementById("fil-show").value;
   filteredEmp=buildEmp().filter(function(r){
     if(q&&(r.nombre||"").toLowerCase().indexOf(q)<0&&(r.id||"").indexOf(q)<0&&(r.supervisor||"").toLowerCase().indexOf(q)<0)return false;
-    if(sup&&r.supervisor!==sup)return false;
-    if(show==="noreg"&&r.total>0)return false;if(show==="noshow"&&r.noshow===0)return false;if(show==="multi"&&r.total<3)return false;
-    return true;
+    if(sup&&r.supervisor!==sup)return false;if(show==="noreg"&&r.total>0)return false;if(show==="noshow"&&r.noshow===0)return false;if(show==="multi"&&r.total<3)return false;return true;
   }).sort(function(a,b){return b.total-a.total;});
   empPage=0;renderEmp();
 }
-
 function renderEmp(){
   var tbody=document.getElementById("emp-tbody");var start=empPage*PAGE;var slice=filteredEmp.slice(start,start+PAGE);
   document.getElementById("emp-count").textContent=filteredEmp.length+" empleados";
@@ -474,11 +434,8 @@ function renderEmp(){
   var html="";
   for(var i=0;i<slice.length;i++){
     var r=slice[i];var dot="dot-ok",lbl="Activo",bg="";
-    if(!r.hasRecord){dot="dot-gray";lbl="Sin reporte";bg="background:#f8fafc";}
-    else if(r.total>=5){dot="dot-err";lbl="Alta frecuencia";bg="background:#fff1f2";}
-    else if(r.noshow>0){dot="dot-warn";lbl="Tiene no shows";bg="background:#faf5ff";}
-    var tc=r.total===0?"#94a3b8":r.total>=5?"#e24b4a":r.total>=3?"#7c3aed":"#0e9f7e";
-    var uid="e"+(start+i);
+    if(!r.hasRecord){dot="dot-gray";lbl="Sin reporte";bg="background:#f8fafc";}else if(r.total>=5){dot="dot-err";lbl="Alta frecuencia";bg="background:#fff1f2";}else if(r.noshow>0){dot="dot-warn";lbl="Tiene no shows";bg="background:#faf5ff";}
+    var tc=r.total===0?"#94a3b8":r.total>=5?"#e24b4a":r.total>=3?"#7c3aed":"#0e9f7e";var uid="e"+(start+i);
     html+='<tr style="'+bg+'"><td style="color:#94a3b8;font-size:11px;font-family:monospace">'+r.id+'</td>';
     html+='<td style="white-space:normal;line-height:1.4;font-weight:500">'+r.nombre+'</td>';
     html+='<td style="text-align:center"><span style="font-size:15px;font-weight:600;color:'+tc+'">'+r.total+'</span></td>';
@@ -490,18 +447,15 @@ function renderEmp(){
   }
   tbody.innerHTML=html;
   document.getElementById("emp-pinfo").textContent="Pag "+(empPage+1)+" de "+(Math.ceil(filteredEmp.length/PAGE)||1);
-  document.getElementById("emp-prev").disabled=empPage===0;
-  document.getElementById("emp-next").disabled=start+PAGE>=filteredEmp.length;
+  document.getElementById("emp-prev").disabled=empPage===0;document.getElementById("emp-next").disabled=start+PAGE>=filteredEmp.length;
 }
-
 function renderTop20(){
   var empData=buildEmp();var top=empData.filter(function(e){return e.total>0;}).sort(function(a,b){return b.total-a.total;}).slice(0,20);
   var tbody=document.getElementById("top20-tbody");
   if(!top.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:2rem;color:#94a3b8">No hay datos</td></tr>';return;}
   var html="";
   for(var i=0;i<top.length;i++){
-    var r=top[i];var rank=i+1;var rc=rank===1?"rank-1":rank===2?"rank-2":rank===3?"rank-3":"rank-other";
-    var tc=r.total>=8?"#e24b4a":r.total>=5?"#7c3aed":"#0e9f7e";
+    var r=top[i];var rank=i+1;var rc=rank===1?"rank-1":rank===2?"rank-2":rank===3?"rank-3":"rank-other";var tc=r.total>=8?"#e24b4a":r.total>=5?"#7c3aed":"#0e9f7e";
     html+='<tr><td style="text-align:center"><span class="rank-num '+rc+'">'+rank+'</span></td>';
     html+='<td style="color:#94a3b8;font-size:11px;font-family:monospace">'+r.id+'</td>';
     html+='<td style="font-weight:500">'+r.nombre+'</td>';
@@ -513,7 +467,6 @@ function renderTop20(){
   }
   tbody.innerHTML=html;
 }
-
 function renderMeses(){
   var mesMap={};
   for(var i=0;i<allAus.length;i++){var r=allAus[i];var m=r.fecha?r.fecha.slice(0,7):null;if(!m)continue;if(!mesMap[m])mesMap[m]={total:0,tipos:{}};mesMap[m].total++;var t=r.tipo||"Otro";mesMap[m].tipos[t]=(mesMap[m].tipos[t]||0)+1;}
@@ -525,7 +478,6 @@ function renderMeses(){
   for(var i=0;i<meses.length;i++){var m=meses[i];var parts=m.split("-");var mn=MESES[parts[1]]||parts[1];var tipos=mesMap[m].tipos;var tiposHtml="";var tkeys=Object.keys(tipos).sort(function(a,b){return tipos[b]-tipos[a];});for(var j=0;j<tkeys.length;j++){tiposHtml+=tipoBadge(tkeys[j])+' <span style="font-size:11px;color:#64748b;margin-right:8px">'+tipos[tkeys[j]]+"</span>";}detailHtml+='<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:12px;font-weight:500;color:#1e293b;width:100px;flex-shrink:0">'+mn+'</span><span style="font-size:14px;font-weight:700;color:#2e1065;width:36px;flex-shrink:0">'+mesMap[m].total+'</span><div>'+tiposHtml+"</div></div>";}
   document.getElementById("month-detail").innerHTML=detailHtml;
 }
-
 function renderComparar(){
   var m1=document.getElementById("comp-mes1").value,m2=document.getElementById("comp-mes2").value;
   if(!m1||!m2){document.getElementById("compare-content").innerHTML='<div style="text-align:center;color:#94a3b8;font-size:13px;grid-column:span 2;padding:2rem">Selecciona dos meses</div>';return;}
@@ -538,35 +490,28 @@ function renderComparar(){
   html+='<div class="compare-col"><h3>'+mn2+'</h3>'+row("Total ausencias",s2.total,s1.total)+row("No shows",s2.noshow,s1.noshow)+row("Enfermedad",s2.enf,s1.enf)+row("Vacaciones",s2.vac,s1.vac)+row("Personal",s2.per,s1.per)+row("Empleados afectados",s2.empCount,s1.empCount)+"</div>";
   document.getElementById("compare-content").innerHTML=html;
 }
-
 function renderCalendario(){
   var mes=document.getElementById("cal-mes").value;
   if(!mes){document.getElementById("calendario-content").innerHTML='<p style="color:#94a3b8;font-size:13px;padding:1rem">Selecciona un mes.</p>';return;}
-  var p=mes.split("-");var year=parseInt(p[0]),month=parseInt(p[1])-1;
-  var diasMap={};
+  var p=mes.split("-");var year=parseInt(p[0]),month=parseInt(p[1])-1;var diasMap={};
   for(var i=0;i<allAus.length;i++){var r=allAus[i];if(!r.fecha||r.fecha.slice(0,7)!==mes)continue;var dia=r.fecha.slice(8,10);if(!diasMap[dia])diasMap[dia]=[];diasMap[dia].push(r);}
   var totalDias=Object.keys(diasMap).length,totalAus=0;for(var d in diasMap)totalAus+=diasMap[d].length;
   document.getElementById("cal-count").textContent=totalAus+" ausencias en "+totalDias+" dias";
   var DIAS=["Dom","Lun","Mar","Mie","Jue","Vie","Sab"];
   var firstDay=new Date(year,month,1).getDay(),lastDay=new Date(year,month+1,0).getDate();
-  var html='<h3 style="font-size:13px;font-weight:600;color:#2e1065;margin-bottom:12px">'+(MESES[p[1]]||p[1])+" "+year+"</h3><div class='cal-grid'>";
+  var html='<h3 style="font-size:13px;font-weight:600;color:#2e1065;margin-bottom:12px">'+(MESES[p[1]]||p[1])+" "+year+'</h3><div class="cal-grid">';
   for(var i=0;i<7;i++)html+='<div class="cal-header">'+DIAS[i]+"</div>";
   for(var i=0;i<firstDay;i++)html+='<div class="cal-day empty"></div>';
   for(var d=1;d<=lastDay;d++){
     var dStr=String(d).padStart(2,"0");var abs=diasMap[dStr]||[];var cls="cal-day"+(abs.length>0?" has-abs":"");
     html+='<div class="'+cls+'"><div class="cal-num">'+d+"</div>";
-    var ns=0,enf=0,otro=0;
-    for(var j=0;j<abs.length;j++){var t=(abs[j].tipo||"").toLowerCase();if(t.indexOf("no show")>=0)ns++;else if(t.indexOf("enfer")>=0)enf++;else otro++;}
-    if(ns>0)html+='<span class="cal-dot" style="background:#e24b4a"></span>';
-    if(enf>0)html+='<span class="cal-dot" style="background:#f59e0b"></span>';
-    if(otro>0)html+='<span class="cal-dot" style="background:#7c3aed"></span>';
-    if(abs.length>0)html+='<div style="font-size:9px;color:#4c1d95;font-weight:600;margin-top:2px">'+abs.length+"</div>";
-    html+="</div>";
+    var ns=0,enf=0,otro=0;for(var j=0;j<abs.length;j++){var t=(abs[j].tipo||"").toLowerCase();if(t.indexOf("no show")>=0)ns++;else if(t.indexOf("enfer")>=0)enf++;else otro++;}
+    if(ns>0)html+='<span class="cal-dot" style="background:#e24b4a"></span>';if(enf>0)html+='<span class="cal-dot" style="background:#f59e0b"></span>';if(otro>0)html+='<span class="cal-dot" style="background:#7c3aed"></span>';
+    if(abs.length>0)html+='<div style="font-size:9px;color:#4c1d95;font-weight:600;margin-top:2px">'+abs.length+"</div>";html+="</div>";
   }
-  html+="</div><div class='cal-legend'><span><span class='cal-dot' style='background:#e24b4a;display:inline-block'></span>No show</span><span><span class='cal-dot' style='background:#f59e0b;display:inline-block'></span>Enfermedad</span><span><span class='cal-dot' style='background:#7c3aed;display:inline-block'></span>Otro</span></div>";
+  html+='</div><div class="cal-legend"><span><span class="cal-dot" style="background:#e24b4a;display:inline-block"></span>No show</span><span><span class="cal-dot" style="background:#f59e0b;display:inline-block"></span>Enfermedad</span><span><span class="cal-dot" style="background:#7c3aed;display:inline-block"></span>Otro</span></div>';
   document.getElementById("calendario-content").innerHTML=html;
 }
-
 function renderBono(){
   var mes=document.getElementById("bono-mes").value;
   if(!mes){document.getElementById("bono-tbody").innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8">Selecciona un mes</td></tr>';return;}
@@ -574,39 +519,32 @@ function renderBono(){
   for(var i=0;i<allAus.length;i++){var r=allAus[i];if(!r.fecha||r.fecha.slice(0,7)!==mes)continue;var k=(r.empleado||"").toLowerCase().trim();if(!k)continue;if(!empAus[k])empAus[k]={total:0,noshow:0};empAus[k].total++;if((r.tipo||"").toLowerCase().indexOf("no show")>=0)empAus[k].noshow++;}
   var empData=buildEmp();var results=[];
   for(var i=0;i<empData.length;i++){
-    var e=empData[i];var ausData=null;
-    var parts=e.nombre.toLowerCase().split(",").map(function(s){return s.trim();});var ap=parts[0]||"";var apwords=ap.split(" ");
-    var mkeys=Object.keys(empAus);
+    var e=empData[i];var ausData=null;var parts=e.nombre.toLowerCase().split(",").map(function(s){return s.trim();});var ap=parts[0]||"";var apwords=ap.split(" ");var mkeys=Object.keys(empAus);
     for(var j=0;j<mkeys.length&&!ausData;j++){var kparts=mkeys[j].split(" ");var klast=kparts[kparts.length-1];for(var w=0;w<apwords.length;w++){if(apwords[w].length>2&&klast===apwords[w]){ausData=empAus[mkeys[j]];break;}}}
-    var totalMes=ausData?ausData.total:0,noShowMes=ausData?ausData.noshow:0;
-    var califica=totalMes===0,razon="Asistencia perfecta";
+    var totalMes=ausData?ausData.total:0,noShowMes=ausData?ausData.noshow:0;var califica=totalMes===0,razon="Asistencia perfecta";
     if(noShowMes>0){califica=false;razon="No show";}else if(totalMes>0){califica=false;razon=totalMes+" ausencia(s)";}
     results.push({id:e.id,nombre:e.nombre,supervisor:e.supervisor,totalMes:totalMes,noShowMes:noShowMes,califica:califica,razon:razon});
   }
   var calif=results.filter(function(r){return r.califica;}).length,noCalif=results.length-calif;
   var p=mes.split("-"),mn=(MESES[p[1]]||p[1])+" "+p[0];
   document.getElementById("bono-count").textContent=calif+" califican de "+results.length;
-  document.getElementById("bono-stats").innerHTML='<div class="m-card c2" style="padding:.75rem"><div class="lbl">Califican</div><div class="val">'+calif+'</div><div class="sub">'+Math.round(calif/Math.max(results.length,1)*100)+"% del roster</div></div>"+'<div class="m-card c3" style="padding:.75rem"><div class="lbl">No califican</div><div class="val">'+noCalif+"</div></div>"+'<div class="m-card c1" style="padding:.75rem"><div class="lbl">Mes evaluado</div><div class="val" style="font-size:16px">'+mn+"</div></div>";
+  document.getElementById("bono-stats").innerHTML='<div class="m-card c2" style="padding:.75rem"><div class="lbl">Califican</div><div class="val">'+calif+'</div><div class="sub">'+Math.round(calif/Math.max(results.length,1)*100)+'% del roster</div></div>'+'<div class="m-card c3" style="padding:.75rem"><div class="lbl">No califican</div><div class="val">'+noCalif+'</div></div>'+'<div class="m-card c1" style="padding:.75rem"><div class="lbl">Mes evaluado</div><div class="val" style="font-size:16px">'+mn+'</div></div>';
   var sorted=results.sort(function(a,b){return a.califica===b.califica?0:a.califica?-1:1;});
   var html="";
-  for(var i=0;i<sorted.length;i++){var r=sorted[i];var bg=r.califica?"background:#f0fdf4":"";html+='<tr style="'+bg+'"><td style="color:#94a3b8;font-size:11px;font-family:monospace">'+r.id+'</td><td style="font-weight:500">'+r.nombre+'</td><td style="font-size:11px;color:#64748b">'+tr2(r.supervisor,20)+'</td><td style="text-align:center;color:'+(r.totalMes>0?"#e24b4a":"#0e9f7e")+';font-weight:600">'+r.totalMes+'</td><td style="text-align:center;color:'+(r.noShowMes>0?"#e24b4a":"#94a3b8")+';font-weight:600">'+r.noShowMes+'</td><td><span class="badge '+(r.califica?"b-califica":"b-nocalifica")+'">'+(r.califica?"Califica":"No califica")+"</span></td><td style='font-size:11px;color:#64748b'>"+r.razon+"</td></tr>";}
+  for(var i=0;i<sorted.length;i++){var r=sorted[i];var bg=r.califica?"background:#f0fdf4":"";html+='<tr style="'+bg+'"><td style="color:#94a3b8;font-size:11px;font-family:monospace">'+r.id+'</td><td style="font-weight:500">'+r.nombre+'</td><td style="font-size:11px;color:#64748b">'+tr2(r.supervisor,20)+'</td><td style="text-align:center;color:'+(r.totalMes>0?"#e24b4a":"#0e9f7e")+';font-weight:600">'+r.totalMes+'</td><td style="text-align:center;color:'+(r.noShowMes>0?"#e24b4a":"#94a3b8")+';font-weight:600">'+r.noShowMes+'</td><td><span class="badge '+(r.califica?"b-califica":"b-nocalifica")+'">'+(r.califica?"Califica":"No califica")+'</span></td><td style="font-size:11px;color:#64748b">'+r.razon+"</td></tr>";}
   document.getElementById("bono-tbody").innerHTML=html;
 }
-
 function exportBonoExcel(){
-  var rows=document.querySelectorAll("#bono-tbody tr");
-  var data=[["ID","Nombre","Supervisor","Ausencias mes","No shows","Califica","Razon"]];
+  var rows=document.querySelectorAll("#bono-tbody tr");var data=[["ID","Nombre","Supervisor","Ausencias mes","No shows","Califica","Razon"]];
   rows.forEach(function(tr){var tds=tr.querySelectorAll("td");if(tds.length>=7)data.push([tds[0].textContent,tds[1].textContent,tds[2].textContent,tds[3].textContent,tds[4].textContent,tds[5].textContent,tds[6].textContent]);});
   var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(data),"Bono");XLSX.writeFile(wb,"bono_asistencia_2026.xlsx");
 }
-
 function detectAlertas(){
   var empMes={};
   for(var i=0;i<allAus.length;i++){
     var r=allAus[i];var k=(r.empleado||"").toLowerCase().trim();var m=r.fecha?r.fecha.slice(0,7):null;if(!k||!m)continue;
     var key=k+"||"+m;if(!empMes[key])empMes[key]={emp:r.empleado,mes:m,total:0,diasSem:{}};
-    empMes[key].total++;
-    if(r.fecha){var d=new Date(r.fecha+"T12:00:00");var dow=d.getDay();empMes[key].diasSem[dow]=(empMes[key].diasSem[dow]||0)+1;}
+    empMes[key].total++;if(r.fecha){var d=new Date(r.fecha+"T12:00:00");var dow=d.getDay();empMes[key].diasSem[dow]=(empMes[key].diasSem[dow]||0)+1;}
   }
   todasAlertasList=[];
   for(var key in empMes){
@@ -617,7 +555,6 @@ function detectAlertas(){
   todasAlertasList.sort(function(a,b){return a.emp.localeCompare(b.emp);});
   alertasVisible=8;renderAlertas();
 }
-
 function renderAlertas(){
   var shown=Math.min(alertasVisible,todasAlertasList.length);
   var html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;font-weight:600;color:#991b1b">'+todasAlertasList.length+' alertas activas</span><button onclick="limpiarAlertas()" style="font-size:11px;padding:3px 10px;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;color:#991b1b;cursor:pointer">Limpiar todas</button></div>';
@@ -629,9 +566,7 @@ function renderAlertas(){
 function verTodasAlertas(){alertasVisible=todasAlertasList.length;renderAlertas();}
 function quitarAlerta(idx){todasAlertasList.splice(idx,1);renderAlertas();}
 function limpiarAlertas(){todasAlertasList=[];document.getElementById("alertas-zone").innerHTML='';}
-
 function changePage(w,d){if(w==="aus"){ausPage+=d;renderAus();}else{empPage+=d;renderEmp();}}
-
 function updateMetrics(){
   var total=ROSTER.length;var ed=buildEmp();var cr=0,sr=0;
   for(var i=0;i<ed.length;i++){if(ed[i].total>0)cr++;else sr++;}
@@ -654,7 +589,6 @@ function updateMetrics(){
   if(prevMes&&currNS!==prevNS){var diffNS=currNS-prevNS;trendNS.className=diffNS>0?"trend-up":"trend-down";trendNS.textContent=(diffNS>0?"↑":"↓")+Math.abs(diffNS);}
   document.getElementById("alert-zone").innerHTML=sr>0?'<div class="alert-box"><strong>'+sr+" empleados de campo</strong> sin ausencia registrada en 2026.</div>":"";
 }
-
 function showTab(tab,btn){
   var panels=document.querySelectorAll(".tab-panel");for(var i=0;i<panels.length;i++)panels[i].classList.remove("active");
   var btns=document.querySelectorAll(".tab-btn");for(var i=0;i<btns.length;i++)btns[i].classList.remove("active");
@@ -663,14 +597,12 @@ function showTab(tab,btn){
   if(tab==="top20")renderTop20();if(tab==="meses")renderMeses();
   if(tab==="comparar")renderComparar();if(tab==="calendario")renderCalendario();if(tab==="bono")renderBono();
 }
-
 function barChart(id,data,colors,filterField){
   var max=0;for(var i=0;i<data.length;i++)if(data[i].v>max)max=data[i].v;if(max===0)max=1;
   var html="",top=data.slice(0,10),selVal=activeChartFilter.field===filterField?activeChartFilter.value:null;
   for(var i=0;i<top.length;i++){var d=top[i];var lbl=d.k.length>14?d.k.slice(0,14)+"...":d.k;var sel=selVal===d.k?" selected":"";html+='<div class="bar-row'+sel+'" onclick="applyChartFilter(\''+filterField+'\',\''+d.k.replace(/'/g,"\\'")+'\')"><span class="bar-label" title="'+esc(d.k)+'">'+esc(lbl)+'</span><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(d.v/max*100)+'%;background:'+colors[i%colors.length]+'"></div></div><span class="bar-count">'+d.v+"</span></div>";}
   document.getElementById(id).innerHTML=html;
 }
-
 function renderCharts(){
   var tC={},dC={},sC={},mC={};
   for(var i=0;i<allAus.length;i++){var r=allAus[i];tC[r.tipo||"Otro"]=(tC[r.tipo||"Otro"]||0)+1;dC[r.departamento||"Sin depto"]=(dC[r.departamento||"Sin depto"]||0)+1;sC[r.supervisor||"--"]=(sC[r.supervisor||"--"]||0)+1;var m=r.fecha?r.fecha.slice(0,7):"--";mC[m]=(mC[m]||0)+1;}
@@ -678,13 +610,11 @@ function renderCharts(){
   barChart("c-tipo",toArr(tC),WINDMAR,"tipo");barChart("c-dep",toArr(dC),WINDMAR,"dep");barChart("c-sup",toArr(sC),WINDMAR,"sup");
   var ma=toArr(mC).sort(function(a,b){return a.k.localeCompare(b.k);});barChart("c-mes",ma,WINDMAR,"mes");
 }
-
 function exportExcel(){
   var data=[["#","ID","Empleado","Supervisor","Departamento","Tipo","Fecha","Status HR","Comentarios","Justificacion"]];
   for(var i=0;i<filteredAus.length;i++){var r=filteredAus[i];data.push([i+1,getEmpId(r.empleado),getEmpNombre(r.empleado),r.supervisor,r.departamento,r.tipo,r.fecha,r.statusHR,r.comentarios,r.justificacion]);}
   var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(data),"Ausencias");XLSX.writeFile(wb,"ausencias_2026.xlsx");
 }
-
 function syncData(){
   showLoader("Sincronizando con Smartsheet...");
   fetch("/api/ausencias").then(function(r){if(!r.ok)throw new Error("Error "+r.status);return r.json();})
@@ -699,4 +629,4 @@ buildRosterIndex();
 syncData();
 </script>
 </body>
-</html>
+</html>  
