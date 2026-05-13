@@ -874,15 +874,6 @@ function limpiarAlertas(){
     var e=empMes[key];var p=e.mes.split("-");var mn=(MESES[p[1]]||p[1])+" "+p[0];
     if(e.total>=3)alertas.push({emp:e.emp,msg:"3+ ausencias en "+mn});
     for(var dow in e.diasSem){if(e.diasSem[dow]>=2)alertas.push({emp:e.emp,msg:"Ausente repetidamente los "+DIAS[dow]+" ("+mn+")"});}
-  }
-  alertas.sort(function(a,b){return a.emp.localeCompare(b.emp);});
-  var html="";
-  var shown=Math.min(alertas.length,8);
-  for(var i=0;i<shown;i++){
-    html+='<div class="alert-red">&#9888; <strong>'+esc(getEmpNombre(alertas[i].emp))+"</strong> — "+alertas[i].msg+"</div>";
-  }
-  if(alertas.length>8)html+='<div class="alert-red">... y '+(alertas.length-8)+" alertas más</div>";
-  document.getElementById("alertas-zone").innerHTML=html;
 }
 function syncData(){
   showLoader("Sincronizando con Smartsheet...");
