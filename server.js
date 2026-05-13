@@ -1,3 +1,4 @@
+const nodemailer = require('nodemailer');
 const express = require('express');
 const app = express();
 app.use(express.json());
@@ -82,5 +83,43 @@ app.get('/app.js', function(req, res) { res.sendFile(path.join(__dirname, 'publi
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('*', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
 
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER || 'v.rivera@windmarhome.com',
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+app.post('/api/notificar', async (req, res) => {
+  const { empleado, ausencias, supervisor, mes } = req.body;
+  try {
+    await transporter.sendMail({
+      from: '"Control de Ausencias 2026" <v.rivera@windmarhome.com>',
+      to: 'v.rivera@windmarhome.com',
+      subject: '⚠️ Alerta: ' + empleado + ' - ' + ausencias + ' ausencias en ' + mes,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+          <div style="background:#2e1065;padding:20px;border-radius:8px 8px 0 0">
+            <h2 style="color:#fff;margin:0">⚠️ Alerta de Ausencias</h2>
+            <p style="color:#a78bfa;margin:5px 0 0">Windmar Field Operations 2026</p>
+          </div>
+          <div style="background:#f5f3ff;padding:20px;border-radius:0 0 8px 8px;border:1px solid #ddd6fe">
+            <p style="font-size:16px;color:#2e1065"><strong>${empleado}</strong> ha alcanzado <strong style="color:#e24b4a">${ausencias} ausencias</strong> en ${mes}.</p>
+            <table style="width:100%;border-collapse:collapse;margin-top:15px">
+              <tr><td style="padding:8px;background:#fff;border:1px solid #ddd6fe;color:#64748b">Empleado</td><td style="padding:8px;background:#fff;border:1px solid #ddd6fe;font-weight:600">${empleado}</td></tr>
+              <tr><td style="padding:8px;background:#f9fafb;border:1px solid #ddd6fe;color:#64748b">Supervisor</td><td style="padding:8px;background:#f9fafb;border:1px solid #ddd6fe">${supervisor||'--'}</td></tr>
+              <tr><td style="padding:8px;background:#fff;border:1px solid #ddd6fe;color:#64748b">Ausencias en ${mes}</td><td style="padding:8px;background:#fff;border:1px solid #ddd6fe;font-weight:600;color:#e24b4a">${ausencias}</td></tr>
+            </table>
+            <p style="margin-top:15px;font-size:12px;color:#94a3b8">Este es un mensaje automático del sistema Control de Ausencias 2026.</p>
+          </div>
+        </div>
+      `
+    });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, function() { console.log('Servidor v3 corriendo en puerto ' + PORT); });
