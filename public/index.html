@@ -288,8 +288,11 @@ body.dark .brig-card:hover{background:#3d2060}
     <div id="tab-brigadas" class="tab-panel">
   <div class="section-card">
     <div class="filters">
-      <input type="text" id="srch-brig" placeholder="Buscar supervisor/brigada..." oninput="renderBrigadas()">
+     <input type="text" id="srch-brig" placeholder="Buscar supervisor..." oninput="renderBrigadas()">
+      <select id="brig-mes" onchange="renderBrigadas()"><option value="">Mes: Todos</option></select>
       <span class="count-pill" id="brig-count"></span>
+      <button class="btn-export" onclick="exportBrigadasExcel()">Exportar Excel</button>
+      <button class="btn-export" onclick="exportBrigadasPDF()" style="background:#e24b4a">Exportar PDF</button>
     </div>
     <div id="brigadas-list"></div>
   </div>
@@ -401,7 +404,8 @@ function buildFilters(){
   var mOpts='<option value="">Selecciona</option>'+meses.map(function(m){var p=m.split("-");return'<option value="'+m+'">'+(MESES[p[1]]||p[1])+" "+p[0]+"</option>";}).join("");
   document.getElementById("comp-mes1").innerHTML=mOpts;document.getElementById("comp-mes2").innerHTML=mOpts;
   document.getElementById("cal-mes").innerHTML='<option value="">Mes: Selecciona</option>'+meses.map(function(m){var p=m.split("-");return'<option value="'+m+'">'+(MESES[p[1]]||p[1])+" "+p[0]+"</option>";}).join("");
-  document.getElementById("bono-mes").innerHTML='<option value="">Mes: Selecciona</option>'+meses.map(function(m){var p=m.split("-");return'<option value="'+m+'">'+(MESES[p[1]]||p[1])+" "+p[0]+"</option>";}).join("");
+  document.getElementById("bono-mes").innerHTML=
+    document.getElementById("brig-mes").innerHTML='<option value="">Mes: Todos</option>'+meses.map(function(m){var p=m.split("-");return'<option value="'+m+'">'+(MESES[p[1]]||p[1])+" "+p[0]+"</option>";}).join("");
 }
 function applyChartFilter(field,value){
   activeChartFilter={field:field,value:value};var badge=document.getElementById("filter-badge");badge.style.display="inline-block";badge.textContent="&#10005; "+value;
@@ -761,14 +765,81 @@ function renderCharts(){
 }
   function renderBrigadas(){
   var q=(document.getElementById("srch-brig").value||"").toLowerCase();
+  var mesFil=document.getElementById("brig-mes").value;
   var supMap={};
   for(var i=0;i<allAus.length;i++){
-    var r=allAus[i];var s=r.supervisor||"Sin supervisor";
-    if(!supMap[s])supMap[s]={total:0,noshow:0,enf:0,empleados:{}};
+    var r=allAus[i];
+    if(mesFil&&(r.fecha||"").slice(0,7)!==mesFil)continue;
+    var s=r.supervisor||"Sin supervisor";
+    if(!supMap[s])supMap[s]={total:0,noshow:0,enf:0,vac:0,per:0,empleados:{}};
     supMap[s].total++;
-    if((r.tipo||"").toLowerCase().indexOf("no show")>=0)supMap[s].noshow++;
-    else if((r.tipo||"").toLowerCase().indexOf("enfer")>=0)supMap[s].enf++;
+    var t=(r.tipo||"").toLowerCase();
+    if(t.indexOf("no show")>=0)supMap[s].noshow++;
+    else if(t.indexOf("enfer")>=0)supMap[s].enf++;
+    else if(t.indexOf("vacac")>=0)supMap[s].vac++;
+    else if(t.indexOf("person")>=0)supMap[s].per++;
     var k=(r.empleado||"").toLowerCase().trim();if(k)supMap[s].empleados[k]=1;
+  }
+  var brigData=[];
+  for(var s in supMap){
+    var totalEmp=0;
+    for(var i=0;i<ROSTER.length;i++){if((ROSTER[i].supervisor||"").toLowerCase()===s.toLowerCase())totalEmp++;}
+    var empConAus=Object.keys(supMap[s].empleados).length;
+    var pctAsis=totalEmp>0?Math.round((totalEmp-empConAus)/totalEmp*100):100;
+    brigData.push({sup:s,total:supMap[s].total,noshow:supMap[s].noshow,enf:supMap[s].enf,vac:supMap[s].vac,per:supMap[s].per,empConAus:empConAus,totalEmp:totalEmp,pctAsis:pctAsis});
+  }
+  brigData.sort(function(a,b){return b.total-a.total;});
+  if(q)brigData=brigData.filter(function(b){return b.sup.toLowerCase().indexOf(q)>=0;});
+  document.getElementById("brig-count").textContent=brigData.length+" supervisores";
+  window._brigData=brigData;
+  var html="";
+  for(var i=0;i<brigData.length;i++){
+    var b=brigData[i];var pctColor=b.pctAsis>=90?"#0e9f7e":b.pctAsis>=75?"#7c3aed":"#e24b4a";
+    html+='<div class="brig-card" onclick="applyChartFilter(\'sup\',\''+b.sup.replace(/'/g,"\\'")+'\');showTab(\'ausencias\',document.querySelector(\'.tab-btn\'))">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+    html+='<h4 style="font-size:13px;font-weight:600;color:#2e1065">'+esc(b.sup)+'</h4>';
+    html+='<span style="font-size:13px;font-weight:700;color:'+pctColor+'">'+b.pctAsis+'% asistencia</span></div>';
+    html+='<div class="brig-bar"><div class="brig-fill" style="width:'+b.pctAsis+'%;background:'+pctColor+'"></div></div>';
+    html+='<div class="brig-stats">';
+    html+='<div class="brig-stat"><span style="font-size:10px;color:#94a3b8;text-transform:uppercase">Empleados</span><strong>'+b.totalEmp+'</strong></div>';
+    html+='<div class="brig-stat"><span style="font-size:10px;color:#94a3b8;text-transform:uppercase">Total ausencias</span><strong style="color:#7c3aed">'+b.total+'</strong></div>';
+    html+='<div class="brig-stat"><span style="font-size:10px;color:#94a3b8;text-transform:uppercase">No shows</span><strong style="color:#e24b4a">'+b.noshow+'</strong></div>';
+    html+='<div class="brig-stat"><span style="font-size:10px;color:#94a3b8;text-transform:uppercase">Enfermedad</span><strong style="color:#f59e0b">'+b.enf+'</strong></div>';
+    html+='<div class="brig-stat"><span style="font-size:10px;color:#94a3b8;text-transform:uppercase">Con ausencia</span><strong>'+b.empConAus+(b.totalEmp?" de "+b.totalEmp:"")+'</strong></div>';
+    html+='</div><div style="font-size:10px;color:#94a3b8;margin-top:6px">Clic para ver ausencias</div></div>';
+  }
+  document.getElementById("brigadas-list").innerHTML=html||'<p style="color:#94a3b8;font-size:13px">No hay datos</p>';
+}
+function exportBrigadasExcel(){
+  var data=[["Supervisor","Empleados","Con ausencia","% Asistencia","Total ausencias","No shows","Enfermedad","Vacaciones","Personal"]];
+  var bd=window._brigData||[];
+  for(var i=0;i<bd.length;i++){var b=bd[i];data.push([b.sup,b.totalEmp,b.empConAus,b.pctAsis+"%",b.total,b.noshow,b.enf,b.vac,b.per]);}
+  var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(data),"Supervisores");
+  var mes=document.getElementById("brig-mes").value;XLSX.writeFile(wb,"reporte_supervisores"+(mes?"_"+mes:"")+"_2026.xlsx");
+}
+function exportBrigadasPDF(){
+  var bd=window._brigData||[];if(!bd.length){alert("No hay datos");return;}
+  var mes=document.getElementById("brig-mes").value;var p=mes?mes.split("-"):null;var mn=p?(MESES[p[1]]||p[1])+" "+p[0]:"Todos los meses";
+  var doc=new jspdf.jsPDF();
+  doc.setFillColor(46,16,101);doc.rect(0,0,210,30,"F");
+  doc.setTextColor(255,255,255);doc.setFontSize(16);doc.setFont("helvetica","bold");
+  doc.text("Reporte por Supervisor",15,13);
+  doc.setFontSize(10);doc.setFont("helvetica","normal");
+  doc.text("Windmar Field Operations - "+mn,15,22);
+  doc.text("Generado: "+new Date().toLocaleDateString("es-PR"),150,22);
+  var data=[];
+  for(var i=0;i<bd.length;i++){var b=bd[i];data.push([b.sup,b.totalEmp,b.empConAus,b.pctAsis+"%",b.total,b.noshow,b.enf]);}
+  doc.autoTable({
+    head:[["Supervisor","Empleados","Con ausencia","% Asist.","Total","No shows","Enf."]],
+    body:data,startY:38,
+    headStyles:{fillColor:[76,29,149],textColor:255,fontStyle:"bold",fontSize:8},
+    bodyStyles:{fontSize:8},alternateRowStyles:{fillColor:[245,243,255]},
+    columnStyles:{0:{cellWidth:55},1:{cellWidth:20},2:{cellWidth:22},3:{cellWidth:18},4:{cellWidth:15},5:{cellWidth:18},6:{cellWidth:15}},
+    didParseCell:function(d){if(d.section==="body"&&d.column.index===3){var v=parseInt(d.cell.raw);d.cell.styles.textColor=v>=90?[14,159,110]:v>=75?[124,58,237]:[226,75,74];d.cell.styles.fontStyle="bold";}}
+  });
+  var pc=doc.internal.getNumberOfPages();for(var i=1;i<=pc;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(150);doc.text("Windmar Field Operations - Confidencial",15,290);doc.text("Pag "+i+" de "+pc,185,290);}
+  doc.save("reporte_supervisores"+(mes?"_"+mes:"")+"_2026.pdf");
+}
   }
   var brigData=[];
   for(var s in supMap){
