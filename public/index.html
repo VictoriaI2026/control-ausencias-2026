@@ -586,7 +586,6 @@ function renderComparar(){
   html+=rowPlain("Sup. mas ausencias",tr2(s2.peorSup,16)+" ("+s2.maxSup+")",tr2(s1.peorSup,16)+" ("+s1.maxSup+")")+"</div>";
   document.getElementById("compare-content").innerHTML=html;
 }
-}
 function renderCalendario(){
   var mes=document.getElementById("cal-mes").value;
   if(!mes){document.getElementById("calendario-content").innerHTML='<p style="color:#94a3b8;font-size:13px;padding:1rem">Selecciona un mes.</p>';return;}
@@ -802,8 +801,6 @@ function renderCharts(){
     html+='<div style="font-size:10px;color:#94a3b8;margin-top:6px">Clic para ver ausencias</div></div>';
   }
   document.getElementById("brigadas-list").innerHTML=html||'<p style="color:#94a3b8;font-size:13px">No hay datos</p>';
-}
-function exportBrigadasExcel(){
 }
 function exportBrigadasExcel(){
   var data=[["Supervisor","Empleados","Con ausencia","% Asistencia","Total ausencias","No shows","Enfermedad","Vacaciones","Personal"]];
