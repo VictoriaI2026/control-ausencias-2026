@@ -817,6 +817,10 @@ function renderComparar(){
   document.getElementById("compare-content").innerHTML=html;
 }
   function detectAlertas(){
+  var alertasVisible=8;
+var todasAlertasList=[];
+
+function detectAlertas(){
   var empMes={};
   for(var i=0;i<allAus.length;i++){
     var r=allAus[i];var k=(r.empleado||"").toLowerCase().trim();
@@ -825,6 +829,47 @@ function renderComparar(){
     if(!empMes[key])empMes[key]={emp:r.empleado,mes:m,total:0,diasSem:{}};
     empMes[key].total++;
     if(r.fecha){var d=new Date(r.fecha+"T12:00:00");var dow=d.getDay();empMes[key].diasSem[dow]=(empMes[key].diasSem[dow]||0)+1;}
+  }
+  var DIAS=["domingo","lunes","martes","miercoles","jueves","viernes","sabado"];
+  todasAlertasList=[];
+  for(var key in empMes){
+    var e=empMes[key];var p=e.mes.split("-");var mn=(MESES[p[1]]||p[1])+" "+p[0];
+    if(e.total>=3)todasAlertasList.push({emp:e.emp,msg:"3+ ausencias en "+mn});
+    for(var dow in e.diasSem){if(e.diasSem[dow]>=2)todasAlertasList.push({emp:e.emp,msg:"Ausente repetidamente los "+DIAS[dow]+" ("+mn+")"});}
+  }
+  todasAlertasList.sort(function(a,b){return a.emp.localeCompare(b.emp);});
+  alertasVisible=8;
+  renderAlertas();
+}
+
+function renderAlertas(){
+  var shown=Math.min(alertasVisible,todasAlertasList.length);
+  var html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;font-weight:600;color:#991b1b">'+todasAlertasList.length+' alertas activas</span><button onclick="limpiarAlertas()" style="font-size:11px;padding:3px 10px;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;color:#991b1b;cursor:pointer">Limpiar todas</button></div>';
+  for(var i=0;i<shown;i++){
+    html+='<div class="alert-red" style="display:flex;justify-content:space-between;align-items:center"><span>&#9888; <strong>'+esc(getEmpNombre(todasAlertasList[i].emp))+'</strong> — '+todasAlertasList[i].msg+'</span><button onclick="quitarAlerta('+i+')" style="background:none;border:none;color:#991b1b;cursor:pointer;font-size:14px;padding:0 4px">&#10005;</button></div>';
+  }
+  if(todasAlertasList.length>shown){
+    html+='<button onclick="verTodasAlertas()" style="font-size:11px;padding:4px 12px;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;color:#991b1b;cursor:pointer;margin-top:4px">Ver todas ('+todasAlertasList.length+')</button>';
+  } else if(todasAlertasList.length>8){
+    html+='<button onclick="alertasVisible=8;renderAlertas()" style="font-size:11px;padding:4px 12px;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;color:#991b1b;cursor:pointer;margin-top:4px">Mostrar menos</button>';
+  }
+  document.getElementById("alertas-zone").innerHTML=html;
+}
+
+function verTodasAlertas(){
+  alertasVisible=todasAlertasList.length;
+  renderAlertas();
+}
+
+function quitarAlerta(idx){
+  todasAlertasList.splice(idx,1);
+  renderAlertas();
+}
+
+function limpiarAlertas(){
+  todasAlertasList=[];
+  document.getElementById("alertas-zone").innerHTML='';
+}
   }
   var DIAS=["domingo","lunes","martes","miercoles","jueves","viernes","sabado"];
   var alertas=[];
