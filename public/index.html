@@ -523,15 +523,65 @@ function renderMeses(){
 }
 function renderComparar(){
   var m1=document.getElementById("comp-mes1").value,m2=document.getElementById("comp-mes2").value;
-  if(!m1||!m2){document.getElementById("compare-content").innerHTML='<div style="text-align:center;color:#94a3b8;font-size:13px;grid-column:span 2;padding:2rem">Selecciona dos meses</div>';return;}
-  function mesStats(m){var st={total:0,noshow:0,enf:0,vac:0,per:0,emps:{}};for(var i=0;i<allAus.length;i++){var r=allAus[i];if(!r.fecha||r.fecha.slice(0,7)!==m)continue;st.total++;var t=(r.tipo||"").toLowerCase();if(t.indexOf("no show")>=0)st.noshow++;else if(t.indexOf("enfer")>=0)st.enf++;else if(t.indexOf("vacac")>=0)st.vac++;else if(t.indexOf("person")>=0)st.per++;st.emps[(r.empleado||"").toLowerCase().trim()]=1;}st.empCount=Object.keys(st.emps).length;return st;}
-  var s1=mesStats(m1),s2=mesStats(m2);var p1=m1.split("-"),p2=m2.split("-");
+  if(!m1||!m2){document.getElementById("compare-content").innerHTML='<div style="text-align:center;color:#94a3b8;font-size:13px;grid-column:span 2;padding:2rem">Selecciona dos meses para comparar</div>';return;}
+  function mesStats(m){
+    var st={total:0,noshow:0,enf:0,vac:0,per:0,tard:0,emps:{},porDia:{},porSup:{}};
+    for(var i=0;i<allAus.length;i++){
+      var r=allAus[i];if(!r.fecha||r.fecha.slice(0,7)!==m)continue;
+      st.total++;var t=(r.tipo||"").toLowerCase();
+      if(t.indexOf("no show")>=0)st.noshow++;
+      else if(t.indexOf("enfer")>=0)st.enf++;
+      else if(t.indexOf("vacac")>=0)st.vac++;
+      else if(t.indexOf("person")>=0)st.per++;
+      else if(t.indexOf("tarda")>=0)st.tard++;
+      st.emps[(r.empleado||"").toLowerCase().trim()]=1;
+      var dia=r.fecha.slice(8,10);st.porDia[dia]=(st.porDia[dia]||0)+1;
+      var sup=r.supervisor||"Sin supervisor";st.porSup[sup]=(st.porSup[sup]||0)+1;
+    }
+    st.empCount=Object.keys(st.emps).length;
+    var maxDia=0,peorDia="--";for(var d in st.porDia){if(st.porDia[d]>maxDia){maxDia=st.porDia[d];peorDia=d;}}
+    var maxSup=0,peorSup="--";for(var s in st.porSup){if(st.porSup[s]>maxSup){maxSup=st.porSup[s];peorSup=s;}}
+    st.peorDia=peorDia;st.maxDia=maxDia;st.peorSup=peorSup;st.maxSup=maxSup;
+    return st;
+  }
+  var s1=mesStats(m1),s2=mesStats(m2);
+  var p1=m1.split("-"),p2=m2.split("-");
   var mn1=(MESES[p1[1]]||p1[1])+" "+p1[0],mn2=(MESES[p2[1]]||p2[1])+" "+p2[0];
-  function dif(v1,v2){return v1>v2?'<span style="color:#7c3aed;font-weight:600">&#8593;'+v1+'</span>':'<span style="color:#0e9f7e;font-weight:600">&#8595;'+v1+'</span>';}
-  function row(lbl,v1,v2){return'<div class="compare-stat"><span>'+lbl+'</span><span>'+dif(v1,v2)+'</span></div>';}
-  var html='<div class="compare-col"><h3>'+mn1+'</h3>'+row("Total ausencias",s1.total,s2.total)+row("No shows",s1.noshow,s2.noshow)+row("Enfermedad",s1.enf,s2.enf)+row("Vacaciones",s1.vac,s2.vac)+row("Personal",s1.per,s2.per)+row("Empleados afectados",s1.empCount,s2.empCount)+"</div>";
-  html+='<div class="compare-col"><h3>'+mn2+'</h3>'+row("Total ausencias",s2.total,s1.total)+row("No shows",s2.noshow,s1.noshow)+row("Enfermedad",s2.enf,s1.enf)+row("Vacaciones",s2.vac,s1.vac)+row("Personal",s2.per,s1.per)+row("Empleados afectados",s2.empCount,s1.empCount)+"</div>";
+  function arr(v1,v2,inv){
+    if(v1===v2)return '<span style="color:#94a3b8">&#8212;</span>';
+    var up=inv?(v1<v2):(v1>v2);
+    return up?'<span style="color:#e24b4a;font-weight:700">&#8593;'+v1+'</span>':'<span style="color:#0e9f7e;font-weight:700">&#8595;'+v1+'</span>';
+  }
+  function row(lbl,v1,v2,inv){
+    return '<div class="compare-stat"><span style="color:#64748b">'+lbl+'</span><div style="display:flex;gap:16px"><span style="min-width:60px;text-align:right">'+arr(v1,v2,inv)+'</span><span style="min-width:60px;text-align:right">'+arr(v2,v1,inv)+'</span></div></div>';
+  }
+  function rowPlain(lbl,v1,v2){
+    return '<div class="compare-stat"><span style="color:#64748b">'+lbl+'</span><div style="display:flex;gap:16px"><span style="min-width:60px;text-align:right;font-size:11px;color:#2e1065;font-weight:600">'+esc(v1)+'</span><span style="min-width:60px;text-align:right;font-size:11px;color:#2e1065;font-weight:600">'+esc(v2)+'</span></div></div>';
+  }
+  var diffTotal=s1.total-s2.total;var diffPct=s2.total>0?Math.round((s1.total-s2.total)/s2.total*100):0;
+  var diffColor=diffTotal>0?"#e24b4a":diffTotal<0?"#0e9f7e":"#94a3b8";
+  var diffIcon=diffTotal>0?"&#8593;":diffTotal<0?"&#8595;":"&#8212;";
+  var html='<div style="grid-column:span 2;background:#f5f3ff;border-radius:10px;padding:1rem;margin-bottom:8px;border:1px solid #ddd6fe">';
+  html+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
+  html+='<div><span style="font-size:12px;color:#64748b">Comparando </span><strong style="color:#2e1065">'+mn1+'</strong><span style="color:#94a3b8;margin:0 8px">vs</span><strong style="color:#2e1065">'+mn2+'</strong></div>';
+  html+='<div style="font-size:13px;font-weight:700;color:'+diffColor+'">'+diffIcon+' '+Math.abs(diffTotal)+' ausencias ('+Math.abs(diffPct)+'%)</div>';
+  html+='</div></div>';
+  html+='<div class="compare-col"><div style="display:flex;justify-content:space-between;margin-bottom:10px"><h3>'+mn1+'</h3><span style="font-size:20px;font-weight:700;color:#7c3aed">'+s1.total+'</span></div>';
+  html+=rowPlain("Empleados afectados",s1.empCount,s2.empCount);
+  html+='<div style="font-size:10px;color:#94a3b8;text-transform:uppercase;margin:8px 0 4px">Por tipo</div>';
+  html+=row("No shows",s1.noshow,s2.noshow,true)+row("Enfermedad",s1.enf,s2.enf,true)+row("Vacaciones",s1.vac,s2.vac,false)+row("Personal",s1.per,s2.per,false);
+  html+='<div style="font-size:10px;color:#94a3b8;text-transform:uppercase;margin:8px 0 4px">Destacados</div>';
+  html+=rowPlain("Dia mas ausencias","Dia "+s1.peorDia+" ("+s1.maxDia+")","Dia "+s2.peorDia+" ("+s2.maxDia+")");
+  html+=rowPlain("Sup. mas ausencias",tr2(s1.peorSup,16)+" ("+s1.maxSup+")",tr2(s2.peorSup,16)+" ("+s2.maxSup+")")+"</div>";
+  html+='<div class="compare-col"><div style="display:flex;justify-content:space-between;margin-bottom:10px"><h3>'+mn2+'</h3><span style="font-size:20px;font-weight:700;color:#7c3aed">'+s2.total+'</span></div>';
+  html+=rowPlain("Empleados afectados",s2.empCount,s1.empCount);
+  html+='<div style="font-size:10px;color:#94a3b8;text-transform:uppercase;margin:8px 0 4px">Por tipo</div>';
+  html+=row("No shows",s2.noshow,s1.noshow,true)+row("Enfermedad",s2.enf,s1.enf,true)+row("Vacaciones",s2.vac,s1.vac,false)+row("Personal",s2.per,s1.per,false);
+  html+='<div style="font-size:10px;color:#94a3b8;text-transform:uppercase;margin:8px 0 4px">Destacados</div>';
+  html+=rowPlain("Dia mas ausencias","Dia "+s2.peorDia+" ("+s2.maxDia+")","Dia "+s1.peorDia+" ("+s1.maxDia+")");
+  html+=rowPlain("Sup. mas ausencias",tr2(s2.peorSup,16)+" ("+s2.maxSup+")",tr2(s1.peorSup,16)+" ("+s1.maxSup+")")+"</div>";
   document.getElementById("compare-content").innerHTML=html;
+}
 }
 function renderCalendario(){
   var mes=document.getElementById("cal-mes").value;
