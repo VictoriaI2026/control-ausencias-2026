@@ -779,36 +779,6 @@ function renderCharts(){
     else if(t.indexOf("vacac")>=0)supMap[s].vac++;
     else if(t.indexOf("person")>=0)supMap[s].per++;
     var k=(r.empleado||"").toLowerCase().trim();if(k)supMap[s].empleados[k]=1;
-  }
-  var brigData=[];
-  for(var s in supMap){
-    var totalEmp=0;
-    for(var i=0;i<ROSTER.length;i++){if((ROSTER[i].supervisor||"").toLowerCase()===s.toLowerCase())totalEmp++;}
-    var empConAus=Object.keys(supMap[s].empleados).length;
-    var pctAsis=totalEmp>0?Math.round((totalEmp-empConAus)/totalEmp*100):100;
-    brigData.push({sup:s,total:supMap[s].total,noshow:supMap[s].noshow,enf:supMap[s].enf,vac:supMap[s].vac,per:supMap[s].per,empConAus:empConAus,totalEmp:totalEmp,pctAsis:pctAsis});
-  }
-  brigData.sort(function(a,b){return b.total-a.total;});
-  if(q)brigData=brigData.filter(function(b){return b.sup.toLowerCase().indexOf(q)>=0;});
-  document.getElementById("brig-count").textContent=brigData.length+" supervisores";
-  window._brigData=brigData;
-  var html="";
-  for(var i=0;i<brigData.length;i++){
-    var b=brigData[i];var pctColor=b.pctAsis>=90?"#0e9f7e":b.pctAsis>=75?"#7c3aed":"#e24b4a";
-    html+='<div class="brig-card" onclick="applyChartFilter(\'sup\',\''+b.sup.replace(/'/g,"\\'")+'\');showTab(\'ausencias\',document.querySelector(\'.tab-btn\'))">';
-    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
-    html+='<h4 style="font-size:13px;font-weight:600;color:#2e1065">'+esc(b.sup)+'</h4>';
-    html+='<span style="font-size:13px;font-weight:700;color:'+pctColor+'">'+b.pctAsis+'% asistencia</span></div>';
-    html+='<div class="brig-bar"><div class="brig-fill" style="width:'+b.pctAsis+'%;background:'+pctColor+'"></div></div>';
-    html+='<div class="brig-stats">';
-    html+='<div class="brig-stat"><span style="font-size:10px;color:#94a3b8;text-transform:uppercase">Empleados</span><strong>'+b.totalEmp+'</strong></div>';
-    html+='<div class="brig-stat"><span style="font-size:10px;color:#94a3b8;text-transform:uppercase">Total ausencias</span><strong style="color:#7c3aed">'+b.total+'</strong></div>';
-    html+='<div class="brig-stat"><span style="font-size:10px;color:#94a3b8;text-transform:uppercase">No shows</span><strong style="color:#e24b4a">'+b.noshow+'</strong></div>';
-    html+='<div class="brig-stat"><span style="font-size:10px;color:#94a3b8;text-transform:uppercase">Enfermedad</span><strong style="color:#f59e0b">'+b.enf+'</strong></div>';
-    html+='<div class="brig-stat"><span style="font-size:10px;color:#94a3b8;text-transform:uppercase">Con ausencia</span><strong>'+b.empConAus+(b.totalEmp?" de "+b.totalEmp:"")+'</strong></div>';
-    html+='</div><div style="font-size:10px;color:#94a3b8;margin-top:6px">Clic para ver ausencias</div></div>';
-  }
-  document.getElementById("brigadas-list").innerHTML=html||'<p style="color:#94a3b8;font-size:13px">No hay datos</p>';
 }
 function exportBrigadasExcel(){
   var data=[["Supervisor","Empleados","Con ausencia","% Asistencia","Total ausencias","No shows","Enfermedad","Vacaciones","Personal"]];
@@ -839,7 +809,6 @@ function exportBrigadasPDF(){
   });
   var pc=doc.internal.getNumberOfPages();for(var i=1;i<=pc;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(150);doc.text("Windmar Field Operations - Confidencial",15,290);doc.text("Pag "+i+" de "+pc,185,290);}
   doc.save("reporte_supervisores"+(mes?"_"+mes:"")+"_2026.pdf");
-}
   }
   var brigData=[];
   for(var s in supMap){
