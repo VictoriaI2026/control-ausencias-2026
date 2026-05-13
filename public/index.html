@@ -662,7 +662,6 @@ function renderAlertas(){
   else if(todasAlertasList.length>8){html+='<button onclick="alertasVisible=8;renderAlertas()" style="font-size:11px;padding:4px 12px;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;color:#991b1b;cursor:pointer;margin-top:4px">Mostrar menos</button>';}
   document.getElementById("alertas-zone").innerHTML=html;
 }
-}
 function verTodasAlertas(){alertasVisible=todasAlertasList.length;renderAlertas();}
 function quitarAlerta(idx){todasAlertasList.splice(idx,1);renderAlertas();}
 function limpiarAlertas(){todasAlertasList=[];document.getElementById("alertas-zone").innerHTML='';}
