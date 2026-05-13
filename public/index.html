@@ -90,6 +90,8 @@ tr:hover td{background:#f8fafc}
 .loading-overlay p{color:#fff;font-size:13px}
 .rank-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:11px;font-weight:600}
 .rank-1{background:var(--yellow);color:var(--navy)}.rank-2{background:#94a3b8;color:#fff}.rank-3{background:var(--coral);color:#fff}.rank-other{background:#f1f5f9;color:#64748b}
+    .b-califica{background:#e1f5ee;color:#0f6e56;font-weight:600}
+.b-nocalifica{background:#fcebeb;color:#a32d2d;font-weight:600}
     .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}
 .cal-header{font-size:10px;font-weight:600;color:#4c1d95;text-align:center;padding:4px}
 .cal-day{min-height:50px;border-radius:6px;padding:4px;background:#f5f3ff;border:1px solid #ede9fe;position:relative}
@@ -138,6 +140,7 @@ tr:hover td{background:#f8fafc}
       <button class="tab-btn" onclick="showTab('meses',this)">Por mes</button>
      <button class="tab-btn" onclick="showTab('comparar',this)">Comparar meses</button>
       <button class="tab-btn" onclick="showTab('calendario',this)">Calendario</button>
+      <button class="tab-btn" onclick="showTab('bono',this)">Bono asistencia</button>
       <button class="tab-btn" onclick="showTab('resumen',this)">Resumen visual</button>
     </div>
 
@@ -214,6 +217,23 @@ tr:hover td{background:#f8fafc}
         </div>
       </div>
     </div>
+    <div id="tab-bono" class="tab-panel">
+  <div class="section-card">
+    <div class="filters">
+      <select id="bono-mes" onchange="renderBono()"><option value="">Mes: Selecciona</option></select>
+      <span class="count-pill" id="bono-count"></span>
+      <button class="btn-export" onclick="exportBonoExcel()">Exportar Excel</button>
+    </div>
+    <div id="bono-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1rem"></div>
+    <div class="tbl-wrap">
+      <table>
+        <colgroup><col style="width:55px"><col style="width:180px"><col style="width:120px"><col style="width:70px"><col style="width:70px"><col style="width:110px"><col style="width:120px"></colgroup>
+        <thead><tr><th>ID</th><th>Nombre</th><th>Supervisor</th><th>Ausencias</th><th>No shows</th><th>Bono</th><th>Razon</th></tr></thead>
+        <tbody id="bono-tbody"><tr><td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8">Selecciona un mes para ver el bono</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
     <div id="tab-calendario" class="tab-panel">
   <div class="section-card">
     <div class="filters">
@@ -379,6 +399,7 @@ function buildFilters(){
 document.getElementById("comp-mes1").innerHTML=mOpts;
 document.getElementById("comp-mes2").innerHTML=mOpts;
 document.getElementById("cal-mes").innerHTML='<option value="">Mes: Selecciona</option>'+meses.map(function(m){var p=m.split("-");return'<option value="'+m+'">'+(MESES[p[1]]||p[1])+" "+p[0]+"</option>";}).join("");
+  document.getElementById("bono-mes").innerHTML='<option value="">Mes: Selecciona</option>'+meses.map(function(m){var p=m.split("-");return'<option value="'+m+'">'+(MESES[p[1]]||p[1])+" "+p[0]+"</option>";}).join("");
 }
 
 function applyChartFilter(field,value){
@@ -607,6 +628,7 @@ function showTab(tab,btn){
   if(tab==="meses")renderMeses();
   if(tab==="comparar")renderComparar();
   if(tab==="calendario")renderCalendario();
+  if(tab==="bono")renderBono();
 }
 
 function barChart(id,data,colors,filterField){
@@ -640,6 +662,69 @@ function renderCharts(){
   var ma=toArr(mC).sort(function(a,b){return a.k.localeCompare(b.k);});
   for(var i=0;i<ma.length;i++){var p=ma[i].k.split("-");ma[i].displayK=(MESES[p[1]]||p[1])||ma[i].k;ma[i].lbl=ma[i].displayK;}
   barChart("c-mes",ma,["#0D1B3E","#1A2D5A","#1A56DB","#0E9F7E","#7F77DD","#FFD100"],"mes");
+}
+  function renderBono(){
+  var mes=document.getElementById("bono-mes").value;
+  if(!mes){document.getElementById("bono-tbody").innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8">Selecciona un mes</td></tr>';return;}
+  var empAus={};
+  for(var i=0;i<allAus.length;i++){
+    var r=allAus[i];if(!r.fecha||r.fecha.slice(0,7)!==mes)continue;
+    var k=(r.empleado||"").toLowerCase().trim();if(!k)continue;
+    if(!empAus[k])empAus[k]={nombre:r.empleado,total:0,noshow:0};
+    empAus[k].total++;
+    if((r.tipo||"").toLowerCase().indexOf("no show")>=0)empAus[k].noshow++;
+  }
+  var empData=buildEmp();var results=[];
+  for(var i=0;i<empData.length;i++){
+    var e=empData[i];
+    var ausData=null;
+    var parts=e.nombre.toLowerCase().split(",").map(function(s){return s.trim();});
+    var ap=parts[0]||"";var apwords=ap.split(" ");
+    var mkeys=Object.keys(empAus);
+    for(var j=0;j<mkeys.length&&!ausData;j++){
+      var kparts=mkeys[j].split(" ");var klast=kparts[kparts.length-1];
+      for(var w=0;w<apwords.length;w++){if(apwords[w].length>2&&klast===apwords[w]){ausData=empAus[mkeys[j]];break;}}
+    }
+    var totalMes=ausData?ausData.total:0;var noShowMes=ausData?ausData.noshow:0;
+    var califica=totalMes===0;var razon="Asistencia perfecta";
+    if(noShowMes>0){califica=false;razon="No show";}
+    else if(totalMes>0){califica=false;razon=totalMes+" ausencia(s)";}
+    results.push({id:e.id,nombre:e.nombre,supervisor:e.supervisor,totalMes:totalMes,noShowMes:noShowMes,califica:califica,razon:razon});
+  }
+  var calif=results.filter(function(r){return r.califica;}).length;
+  var noCalif=results.length-calif;
+  var p=mes.split("-");var mn=(MESES[p[1]]||p[1])+" "+p[0];
+  document.getElementById("bono-count").textContent=calif+" califican de "+results.length;
+  document.getElementById("bono-stats").innerHTML=
+    '<div class="m-card c2" style="padding:.75rem"><div class="lbl">Califican para bono</div><div class="val">'+calif+'</div><div class="sub">'+Math.round(calif/Math.max(results.length,1)*100)+"% del roster</div></div>"+
+    '<div class="m-card c3" style="padding:.75rem"><div class="lbl">No califican</div><div class="val">'+noCalif+"</div><div class=\"sub\">Tienen ausencias</div></div>"+
+    '<div class="m-card c1" style="padding:.75rem"><div class="lbl">Mes evaluado</div><div class="val" style="font-size:16px">'+mn+"</div></div>";
+  var sorted=results.sort(function(a,b){return a.califica===b.califica?0:a.califica?-1:1;});
+  var html="";
+  for(var i=0;i<sorted.length;i++){
+    var r=sorted[i];var bg=r.califica?"background:#f0fdf4":"";
+    html+='<tr style="'+bg+'">';
+    html+='<td style="color:#94a3b8;font-size:11px;font-family:monospace">'+r.id+"</td>";
+    html+='<td style="font-weight:500">'+r.nombre+"</td>";
+    html+='<td style="font-size:11px;color:#64748b">'+tr2(r.supervisor,20)+"</td>";
+    html+='<td style="text-align:center;color:'+(r.totalMes>0?"#e24b4a":"#0e9f7e")+';font-weight:600">'+r.totalMes+"</td>";
+    html+='<td style="text-align:center;color:'+(r.noShowMes>0?"#e24b4a":"#94a3b8")+';font-weight:600">'+r.noShowMes+"</td>";
+    html+='<td><span class="badge '+(r.califica?"b-califica":"b-nocalifica")+'">'+(r.califica?"Califica":"No califica")+"</span></td>";
+    html+='<td style="font-size:11px;color:#64748b">'+r.razon+"</td></tr>";
+  }
+  document.getElementById("bono-tbody").innerHTML=html;
+}
+function exportBonoExcel(){
+  var rows=document.querySelectorAll("#bono-tbody tr");
+  var data=[["ID","Nombre","Supervisor","Ausencias mes","No shows","Califica","Razon"]];
+  rows.forEach(function(tr){
+    var tds=tr.querySelectorAll("td");
+    if(tds.length>=7)data.push([tds[0].textContent,tds[1].textContent,tds[2].textContent,tds[3].textContent,tds[4].textContent,tds[5].textContent,tds[6].textContent]);
+  });
+  var wb=XLSX.utils.book_new();
+  var ws=XLSX.utils.aoa_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb,ws,"Bono");
+  XLSX.writeFile(wb,"bono_asistencia_2026.xlsx");
 }
   function renderCalendario(){
   var mes=document.getElementById("cal-mes").value;
