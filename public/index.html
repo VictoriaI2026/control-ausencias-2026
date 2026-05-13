@@ -88,6 +88,26 @@ tr:hover td{background:#f8fafc}
 .spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:#a78bfa;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-overlay p{color:#fff;font-size:13px}
+  body.dark{background:#1a0a2e;color:#e2d9f3}
+body.dark .section-card{background:#2d1b4e;border-color:#4c1d95}
+body.dark .tabs{background:#2d1b4e;border-color:#4c1d95}
+body.dark .tab-btn{color:#c4b5fd}
+body.dark th{background:#2d1b4e;color:#a78bfa}
+body.dark td{border-color:#3d2060}
+body.dark tr:hover td{background:#3d2060}
+body.dark .filters select,.dark .filters input[type=text]{background:#2d1b4e;border-color:#4c1d95;color:#e2d9f3}
+body.dark .tbl-wrap{border-color:#4c1d95}
+body.dark .chart-card{background:#2d1b4e;border-color:#4c1d95}
+body.dark .pagination button{background:#2d1b4e;border-color:#4c1d95;color:#c4b5fd}
+body.dark .comment-existing{background:#3d2060;border-color:#7c3aed}
+body.dark .input-row input[type=text]{background:#2d1b4e;border-color:#4c1d95;color:#e2d9f3}
+body.dark .status-select{background:#2d1b4e;border-color:#4c1d95;color:#e2d9f3}
+body.dark .count-pill{background:#3d2060;color:#c4b5fd}
+body.dark .alert-box{background:#3d2060;color:#c4b5fd}
+body.dark .month-card{background:linear-gradient(135deg,#1a0a2e 0%,#2e1065 100%)}
+body.dark .compare-col{background:#2d1b4e;border-color:#4c1d95}
+body.dark .cal-day{background:#2d1b4e;border-color:#3d2060}
+body.dark .cal-day.has-abs{background:#3d2060;border-color:#7c3aed}
 .rank-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:11px;font-weight:600}
 .rank-1{background:#a78bfa;color:#2e1065}.rank-2{background:#7c3aed;color:#fff}.rank-3{background:#4c1d95;color:#fff}.rank-other{background:#f5f3ff;color:#4c1d95}
 .month-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:8px}
@@ -121,6 +141,7 @@ tr:hover td{background:#f8fafc}
     <div class="header-right">
       <span class="sync-info" id="sync-info">--</span>
       <button class="btn-sync" onclick="syncData()">Sincronizar</button>
+<button class="btn-sync" onclick="toggleDark()" id="btn-dark">🌙 Oscuro</button>
     </div>
   </header>
   <main>
@@ -625,6 +646,13 @@ function syncData(){
     hideLoader();
   }).catch(function(e){hideLoader();alert("Error: "+e.message);});
 }
+  function toggleDark(){
+  document.body.classList.toggle("dark");
+  var btn=document.getElementById("btn-dark");
+  btn.textContent=document.body.classList.contains("dark")?"☀️ Claro":"🌙 Oscuro";
+  localStorage.setItem("darkMode",document.body.classList.contains("dark")?"1":"0");
+}
+if(localStorage.getItem("darkMode")==="1"){document.body.classList.add("dark");document.getElementById("btn-dark").textContent="☀️ Claro";}
 buildRosterIndex();
 syncData();
 setInterval(function(){syncData();}, 300000);
