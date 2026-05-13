@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Control de Ausencias 2026</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--navy:#2e1065;--navy2:#4c1d95;--royal:#7c3aed;--teal:#8b5cf6;--yellow:#a78bfa;--violet:#c4b5fd;--coral:#7c3aed;--gray-bg:#f5f3ff}
@@ -271,6 +273,7 @@ body.dark .brig-card:hover{background:#3d2060}
           <select id="bono-mes" onchange="renderBono()"><option value="">Mes: Selecciona</option></select>
           <span class="count-pill" id="bono-count"></span>
           <button class="btn-export" onclick="exportBonoExcel()">Exportar Excel</button>
+          <button class="btn-export" onclick="exportBonoPDF()" style="background:#e24b4a">Exportar PDF</button>
         </div>
         <div id="bono-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1rem"></div>
         <div class="tbl-wrap">
@@ -573,6 +576,46 @@ function renderBono(){
   var html="";
   for(var i=0;i<sorted.length;i++){var r=sorted[i];var bg=r.califica?"background:#f0fdf4":"";html+='<tr style="'+bg+'"><td style="color:#94a3b8;font-size:11px;font-family:monospace">'+r.id+'</td><td style="font-weight:500">'+r.nombre+'</td><td style="font-size:11px;color:#64748b">'+tr2(r.supervisor,20)+'</td><td style="text-align:center;color:'+(r.totalMes>0?"#e24b4a":"#0e9f7e")+';font-weight:600">'+r.totalMes+'</td><td style="text-align:center;color:'+(r.noShowMes>0?"#e24b4a":"#94a3b8")+';font-weight:600">'+r.noShowMes+'</td><td><span class="badge '+(r.califica?"b-califica":"b-nocalifica")+'">'+(r.califica?"Califica":"No califica")+'</span></td><td style="font-size:11px;color:#64748b">'+r.razon+"</td></tr>";}
   document.getElementById("bono-tbody").innerHTML=html;
+}
+  function exportBonoPDF(){
+  var mes=document.getElementById("bono-mes").value;
+  if(!mes){alert("Selecciona un mes primero");return;}
+  var p=mes.split("-"),mn=(MESES[p[1]]||p[1])+" "+p[0];
+  var rows=document.querySelectorAll("#bono-tbody tr");
+  if(!rows.length){alert("No hay datos para exportar");return;}
+  var doc=new jspdf.jsPDF();
+  doc.setFillColor(46,16,101);doc.rect(0,0,210,30,"F");
+  doc.setTextColor(255,255,255);doc.setFontSize(16);doc.setFont("helvetica","bold");
+  doc.text("Reporte de Bono de Asistencia",15,13);
+  doc.setFontSize(10);doc.setFont("helvetica","normal");
+  doc.text("Windmar Field Operations - "+mn,15,22);
+  doc.text("Generado: "+new Date().toLocaleDateString("es-PR"),150,22);
+  var statsEl=document.getElementById("bono-stats");
+  var cards=statsEl?statsEl.querySelectorAll(".m-card"):[];
+  if(cards.length>=2){
+    doc.setTextColor(46,16,101);doc.setFontSize(11);doc.setFont("helvetica","bold");
+    var calif=cards[0]?cards[0].querySelector(".val"):null;
+    var noCalif=cards[1]?cards[1].querySelector(".val"):null;
+    if(calif)doc.text("Califican: "+calif.textContent,15,40);
+    if(noCalif)doc.text("No califican: "+noCalif.textContent,80,40);
+  }
+  var data=[];
+  rows.forEach(function(tr){
+    var tds=tr.querySelectorAll("td");
+    if(tds.length>=7)data.push([tds[0].textContent.trim(),tds[1].textContent.trim(),tds[2].textContent.trim(),tds[3].textContent.trim(),tds[4].textContent.trim(),tds[5].textContent.trim(),tds[6].textContent.trim()]);
+  });
+  doc.autoTable({
+    head:[["ID","Nombre","Supervisor","Ausencias","No shows","Bono","Razon"]],
+    body:data,startY:48,
+    headStyles:{fillColor:[76,29,149],textColor:255,fontStyle:"bold",fontSize:9},
+    bodyStyles:{fontSize:8},
+    alternateRowStyles:{fillColor:[245,243,255]},
+    columnStyles:{0:{cellWidth:18},1:{cellWidth:45},2:{cellWidth:35},3:{cellWidth:18},4:{cellWidth:18},5:{cellWidth:22},6:{cellWidth:28}},
+    didParseCell:function(data){if(data.section==="body"&&data.column.index===5){if(data.cell.raw==="Califica")data.cell.styles.textColor=[14,159,110];else data.cell.styles.textColor=[226,75,74];}}
+  });
+  var pageCount=doc.internal.getNumberOfPages();
+  for(var i=1;i<=pageCount;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(150);doc.text("Windmar Field Operations - Confidencial",15,290);doc.text("Pag "+i+" de "+pageCount,185,290);}
+  doc.save("bono_asistencia_"+mes+".pdf");
 }
 function exportBonoExcel(){
   var rows=document.querySelectorAll("#bono-tbody tr");var data=[["ID","Nombre","Supervisor","Ausencias mes","No shows","Califica","Razon"]];
