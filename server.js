@@ -84,11 +84,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('*', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.office365.com',
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL_USER || 'v.rivera@windmarhome.com',
     pass: process.env.EMAIL_PASS
-  }
+  },
+  tls: { ciphers: 'SSLv3' }
 });
 
 app.post('/api/notificar', async (req, res) => {
