@@ -627,6 +627,8 @@ function syncData(){
 }
 buildRosterIndex();
 syncData();
+setInterval(function(){syncData();}, 300000);
+syncData();
 </script>
 </body>
 </html>  
